@@ -1,6 +1,6 @@
-# Pal Breeding
+# Pal Trait Calculator
 
-Unofficial Palworld breeding calculator for **Palworld 1.0+**.
+Unofficial Palworld breeding / trait calculator for **Palworld 1.0+**.
 
 ## Feature map
 

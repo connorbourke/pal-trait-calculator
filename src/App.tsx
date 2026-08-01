@@ -212,7 +212,7 @@ export default function App() {
     <div className="page">
       <div className="atmosphere" aria-hidden="true" />
       <header className="hero">
-        <p className="brand">Pal Breeding</p>
+        <p className="brand">Pal Trait Calculator</p>
         <h1 className="headline">Find the pair. Hatch the Pal.</h1>
         <p className="lede">
           Look up combos, or plan trait routes — through waypoints, or by

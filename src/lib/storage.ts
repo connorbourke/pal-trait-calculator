@@ -1,5 +1,5 @@
-const OWNED_KEY = "pal-breeding.owned";
-const HIDE_TERRARIA_KEY = "pal-breeding.hideTerraria";
+const OWNED_KEY = "pal-trait-calculator.owned";
+const HIDE_TERRARIA_KEY = "pal-trait-calculator.hideTerraria";
 
 export function loadOwned(): number[] {
   try {
