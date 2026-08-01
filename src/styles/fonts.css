@@ -1,0 +1,63 @@
+/* Self-hosted Univers LT Std — subset used by the app */
+
+@font-face {
+  font-family: "Univers LT Std";
+  src:
+    url("/fonts/UniversLTStd-Light.woff2") format("woff2"),
+    url("/fonts/UniversLTStd-Light.woff") format("woff");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers LT Std";
+  src:
+    url("/fonts/UniversLTStd.woff2") format("woff2"),
+    url("/fonts/UniversLTStd.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers LT Std";
+  src:
+    url("/fonts/UniversLTStd-Bold.woff2") format("woff2"),
+    url("/fonts/UniversLTStd-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers LT Std";
+  src:
+    url("/fonts/UniversLTStd-XBlack.woff2") format("woff2"),
+    url("/fonts/UniversLTStd-XBlack.woff") format("woff");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers LT Std Cn";
+  src:
+    url("/fonts/UniversLTStd-Cn.woff") format("woff"),
+    url("/fonts/UniversLTStd-Cn.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-stretch: condensed;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Univers LT Std Cn";
+  src:
+    url("/fonts/UniversLTStd-BoldCn.woff") format("woff"),
+    url("/fonts/UniversLTStd-BoldCn.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-stretch: condensed;
+  font-display: swap;
+}

@@ -1,0 +1,42 @@
+{
+  "project": "tylercamp/palcalc",
+  "release": "v1.18.3",
+  "publishedAt": "2026-07-31T14:09:03Z",
+  "note": "Latest public game-file dump found after Palworld 1.0.2 (2026-07-29/30). DB Version comes from the dump itself.",
+  "urls": {
+    "release": "https://github.com/tylercamp/palcalc/releases/tag/v1.18.3",
+    "db": "https://raw.githubusercontent.com/tylercamp/palcalc/v1.18.3/PalCalc.Model/db.json",
+    "breeding": "https://raw.githubusercontent.com/tylercamp/palcalc/v1.18.3/PalCalc.Model/breeding.json"
+  },
+  "dbVersion": "v27",
+  "palCount": 299,
+  "comboCount": 44851,
+  "specialGenderComboCount": 2,
+  "missingComboCount": 0,
+  "terrariaCount": 11,
+  "minStepEdgeCount": 78423,
+  "mutationPassiveCount": 4,
+  "trending": [
+    6,
+    162,
+    36,
+    89,
+    84,
+    107,
+    294,
+    121
+  ],
+  "hashes": {
+    "dbSourceSha256": "f9d68b04094a036c02836af93896d3e6461d34a942edd199db9f4793f978f929",
+    "breedingSourceSha256": "e0f3a3eeca656ff506f4c1307397cad1bf156680d8c90ca6250ea790f11b38bb"
+  },
+  "generatedAt": "2026-08-01T09:20:00.908Z",
+  "gameTarget": {
+    "minimum": "Palworld 1.0",
+    "preferred": "Palworld 1.0.2",
+    "alignmentNote": "palcalc v1.18.3 shipped 2026-07-31, one day after Steam 1.0.2 hotfixes. No separate public 1.0.2-only dump was found; this is the newest dump available."
+  },
+  "features": {
+    "mutationSpeciesNote": "Official 1.0 notes: Mutation does not change child species. It can add Mutation passives and stronger stats. This app shows that overlay; it does not invent alternate mutation species tables."
+  }
+}
