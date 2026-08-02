@@ -8,6 +8,23 @@
       content="Pal Trait Calculator — Palworld parents, offspring, trait paths, and owned-box planning."
     />
     <title>Pal Trait Calculator</title>
+    <script>
+      (function () {
+        try {
+          var key = "pal-trait-calculator.theme";
+          var stored = localStorage.getItem(key);
+          var theme =
+            stored === "eidrolon" || stored === "sekhmet"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: light)").matches
+                ? "sekhmet"
+                : "eidrolon";
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          document.documentElement.dataset.theme = "eidrolon";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

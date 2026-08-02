@@ -3,6 +3,7 @@ import { ModeToggle } from "./components/ModeToggle";
 import { PalPortrait } from "./components/PalPortrait";
 import { PalSelect } from "./components/PalSelect";
 import { ResultsPanel } from "./components/ResultsPanel";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { TrendingPals } from "./components/TrendingPals";
 import {
   childrenFromParent,
@@ -32,6 +33,12 @@ import {
   saveHideWorldTreeLocked,
   saveOwned,
 } from "./lib/storage";
+import {
+  applyTheme,
+  loadTheme,
+  saveTheme,
+  type ThemeId,
+} from "./lib/theme";
 import type { BreedingDataset, Mode, Pal } from "./lib/types";
 
 type PathPlannerMode = "chain" | "merge";
@@ -42,6 +49,7 @@ export default function App() {
   const [dataset, setDataset] = useState<BreedingDataset | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("path");
+  const [theme, setTheme] = useState<ThemeId>(() => loadTheme());
   const [hideTerraria, setHideTerraria] = useState(true);
   const [hideWorldTreeLocked, setHideWorldTreeLocked] = useState(true);
   const [hideWorldTreeBreedable, setHideWorldTreeBreedable] = useState(false);
@@ -67,6 +75,10 @@ export default function App() {
   const [pathExcludePicker, setPathExcludePicker] = useState<Pal | null>(null);
 
   useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  useEffect(() => {
     let cancelled = false;
     loadDataset()
       .then((data) => {
@@ -86,6 +98,12 @@ export default function App() {
       cancelled = true;
     };
   }, []);
+
+  function updateTheme(next: ThemeId) {
+    setTheme(next);
+    saveTheme(next);
+    applyTheme(next);
+  }
 
   const ownedSet = useMemo(() => new Set(owned), [owned]);
 
@@ -441,7 +459,10 @@ export default function App() {
     <div className="page">
       <div className="atmosphere" aria-hidden="true" />
       <header className="hero">
-        <p className="brand">Pal Trait Calculator</p>
+        <div className="hero-top">
+          <p className="brand">Pal Trait Calculator</p>
+          <ThemeToggle theme={theme} onChange={updateTheme} />
+        </div>
         <h1 className="headline">Find the pair. Hatch the Pal.</h1>
         <p className="lede">
           Plan trait routes by merging two parents — or look up combos, children,
@@ -497,6 +518,7 @@ export default function App() {
                     saveHideTerraria(hideTerraria);
                     saveHideWorldTreeLocked(hideWorldTreeLocked);
                     saveHideWorldTreeBreedable(hideWorldTreeBreedable);
+                    saveTheme(theme);
                   }}
                 >
                   Save preferences
