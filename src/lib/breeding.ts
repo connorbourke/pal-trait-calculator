@@ -81,6 +81,24 @@ export function findChild(
   return dataset.pals[childIndex] ?? null;
 }
 
+export interface PalFilterOptions {
+  hideTerraria?: boolean;
+  hideWorldTreeLocked?: boolean;
+  hideWorldTreeBreedable?: boolean;
+}
+
+/** True when this Pal should be excluded by the active hide filters. */
+export function isPalFiltered(
+  pal: Pal | undefined | null,
+  options: PalFilterOptions,
+): boolean {
+  if (!pal) return true;
+  if (options.hideTerraria && pal.isTerraria) return true;
+  if (options.hideWorldTreeLocked && pal.isWorldTreeLocked) return true;
+  if (options.hideWorldTreeBreedable && pal.isWorldTreeBreedable) return true;
+  return false;
+}
+
 export interface ParentPair {
   comboIndex: number;
   parentA: Pal;
@@ -95,7 +113,7 @@ export interface ParentPair {
 export function findParents(
   dataset: BreedingDataset,
   childIndex: number,
-  options: { hideTerraria?: boolean; owned?: Set<number> } = {},
+  options: PalFilterOptions & { owned?: Set<number> } = {},
 ): ParentPair[] {
   const indexes = dataset.byChild[childIndex] ?? [];
   const results: ParentPair[] = [];
@@ -106,7 +124,10 @@ export function findParents(
     const parentA = dataset.pals[a];
     const parentB = dataset.pals[b];
     if (!parentA || !parentB) continue;
-    if (options.hideTerraria && (parentA.isTerraria || parentB.isTerraria)) {
+    if (
+      isPalFiltered(parentA, options) ||
+      isPalFiltered(parentB, options)
+    ) {
       continue;
     }
 
@@ -200,10 +221,9 @@ export function searchPals(pals: Pal[], query: string): Pal[] {
 
 export function filterPals(
   pals: Pal[],
-  options: { hideTerraria?: boolean; query?: string },
+  options: PalFilterOptions & { query?: string },
 ): Pal[] {
-  let list = pals;
-  if (options.hideTerraria) list = list.filter((p) => !p.isTerraria);
+  let list = pals.filter((p) => !isPalFiltered(p, options));
   if (options.query) return searchPals(list, options.query);
   return list.slice().sort(comparePals);
 }
@@ -211,7 +231,7 @@ export function filterPals(
 export function childrenFromParent(
   dataset: BreedingDataset,
   parentIndex: number,
-  hideTerraria = false,
+  options: PalFilterOptions = {},
 ): { child: Pal; partners: Pal[] }[] {
   const map = new Map<number, Pal[]>();
   for (const comboIndex of dataset.byParent[parentIndex] ?? []) {
@@ -220,7 +240,9 @@ export function childrenFromParent(
     const partner = dataset.pals[partnerIndex];
     const child = dataset.pals[c];
     if (!partner || !child) continue;
-    if (hideTerraria && (partner.isTerraria || child.isTerraria)) continue;
+    if (isPalFiltered(partner, options) || isPalFiltered(child, options)) {
+      continue;
+    }
     const list = map.get(c) ?? [];
     list.push(partner);
     map.set(c, list);

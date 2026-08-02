@@ -43,6 +43,8 @@ export function PalPortrait({
           <span className="meta">
             R{pal.rarity}
             {pal.isTerraria ? " · Terraria" : ""}
+            {pal.isWorldTreeLocked ? " · WT exclusive" : ""}
+            {pal.isWorldTreeBreedable ? " · WT breedable" : ""}
           </span>
         ) : null}
       </div>

@@ -9,6 +9,7 @@ import {
   filterPals,
   findChild,
   findParents,
+  isPalFiltered,
   loadDataset,
 } from "./lib/breeding";
 import {
@@ -23,8 +24,12 @@ import {
 } from "./lib/path";
 import {
   loadHideTerraria,
+  loadHideWorldTreeBreedable,
+  loadHideWorldTreeLocked,
   loadOwned,
   saveHideTerraria,
+  saveHideWorldTreeBreedable,
+  saveHideWorldTreeLocked,
   saveOwned,
 } from "./lib/storage";
 import type { BreedingDataset, Mode, Pal } from "./lib/types";
@@ -38,6 +43,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("path");
   const [hideTerraria, setHideTerraria] = useState(true);
+  const [hideWorldTreeLocked, setHideWorldTreeLocked] = useState(true);
+  const [hideWorldTreeBreedable, setHideWorldTreeBreedable] = useState(false);
   const [includeTargetAsParent, setIncludeTargetAsParent] = useState(false);
   const [owned, setOwned] = useState<number[]>([]);
   const [browseQuery, setBrowseQuery] = useState("");
@@ -66,6 +73,8 @@ export default function App() {
         if (cancelled) return;
         setDataset(data);
         setHideTerraria(loadHideTerraria());
+        setHideWorldTreeLocked(loadHideWorldTreeLocked());
+        setHideWorldTreeBreedable(loadHideWorldTreeBreedable());
         setOwned(loadOwned());
       })
       .catch((err: unknown) => {
@@ -80,25 +89,34 @@ export default function App() {
 
   const ownedSet = useMemo(() => new Set(owned), [owned]);
 
+  const filterOptions = useMemo(
+    () => ({
+      hideTerraria,
+      hideWorldTreeLocked,
+      hideWorldTreeBreedable,
+    }),
+    [hideTerraria, hideWorldTreeLocked, hideWorldTreeBreedable],
+  );
+
   const selectablePals = useMemo(() => {
     if (!dataset) return [];
-    return filterPals(dataset.pals, { hideTerraria });
-  }, [dataset, hideTerraria]);
+    return filterPals(dataset.pals, filterOptions);
+  }, [dataset, filterOptions]);
 
   const trending = useMemo(() => {
     if (!dataset) return [];
     return dataset.meta.trending
       .map((index) => dataset.pals[index])
-      .filter((p) => p && (!hideTerraria || !p.isTerraria));
-  }, [dataset, hideTerraria]);
+      .filter((p) => p && !isPalFiltered(p, filterOptions));
+  }, [dataset, filterOptions]);
 
   const parentPairs = useMemo(() => {
     if (!dataset || target == null || mode !== "parents") return [];
     return findParents(dataset, target.index, {
-      hideTerraria,
+      ...filterOptions,
       owned: ownedSet,
     });
-  }, [dataset, target, mode, hideTerraria, ownedSet]);
+  }, [dataset, target, mode, filterOptions, ownedSet]);
 
   const childResult = useMemo(() => {
     if (!dataset || parentA == null || parentB == null || mode !== "child") {
@@ -110,17 +128,17 @@ export default function App() {
   const singleParentChildren = useMemo(() => {
     if (!dataset || mode !== "child") return [];
     if (parentA && !parentB) {
-      return childrenFromParent(dataset, parentA.index, hideTerraria);
+      return childrenFromParent(dataset, parentA.index, filterOptions);
     }
     if (parentB && !parentA) {
-      return childrenFromParent(dataset, parentB.index, hideTerraria);
+      return childrenFromParent(dataset, parentB.index, filterOptions);
     }
     return [];
-  }, [dataset, mode, parentA, parentB, hideTerraria]);
+  }, [dataset, mode, parentA, parentB, filterOptions]);
 
   const pathOptions = useMemo(
-    () => ({ hideTerraria, includeTargetAsParent }),
-    [hideTerraria, includeTargetAsParent],
+    () => ({ ...filterOptions, includeTargetAsParent }),
+    [filterOptions, includeTargetAsParent],
   );
 
   const mergeCandidates = useMemo((): MergeCandidate[] => {
@@ -166,6 +184,8 @@ export default function App() {
     pathTarget?.index,
     pathPlannerMode,
     hideTerraria,
+    hideWorldTreeLocked,
+    hideWorldTreeBreedable,
     includeTargetAsParent,
     waypointKey,
   ]);
@@ -322,17 +342,27 @@ export default function App() {
 
   const ownedResult = useMemo(() => {
     if (!dataset || mode !== "owned") return null;
-    return multiPalBreeder(dataset, owned, { hideTerraria, generations: 3 });
-  }, [dataset, mode, owned, hideTerraria]);
+    return multiPalBreeder(dataset, owned, { ...filterOptions, generations: 3 });
+  }, [dataset, mode, owned, filterOptions]);
 
   const browsePals = useMemo(() => {
     if (!dataset || mode !== "browse") return [];
-    return filterPals(dataset.pals, { hideTerraria, query: browseQuery });
-  }, [dataset, mode, hideTerraria, browseQuery]);
+    return filterPals(dataset.pals, { ...filterOptions, query: browseQuery });
+  }, [dataset, mode, filterOptions, browseQuery]);
 
   function updateHideTerraria(value: boolean) {
     setHideTerraria(value);
     saveHideTerraria(value);
+  }
+
+  function updateHideWorldTreeLocked(value: boolean) {
+    setHideWorldTreeLocked(value);
+    saveHideWorldTreeLocked(value);
+  }
+
+  function updateHideWorldTreeBreedable(value: boolean) {
+    setHideWorldTreeBreedable(value);
+    saveHideWorldTreeBreedable(value);
   }
 
   function toggleOwned(index: number) {
@@ -439,12 +469,34 @@ export default function App() {
                   />
                   Hide Terraria monsters
                 </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={hideWorldTreeLocked}
+                    onChange={(e) =>
+                      updateHideWorldTreeLocked(e.target.checked)
+                    }
+                  />
+                  Hide World Tree exclusives
+                </label>
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={hideWorldTreeBreedable}
+                    onChange={(e) =>
+                      updateHideWorldTreeBreedable(e.target.checked)
+                    }
+                  />
+                  Hide World Tree breedables
+                </label>
                 <button
                   type="button"
                   className="ghost"
                   onClick={() => {
                     saveOwned(owned);
                     saveHideTerraria(hideTerraria);
+                    saveHideWorldTreeLocked(hideWorldTreeLocked);
+                    saveHideWorldTreeBreedable(hideWorldTreeBreedable);
                   }}
                 >
                   Save preferences

@@ -1,4 +1,4 @@
-import { comparePals, findChild } from "./breeding";
+import { comparePals, findChild, isPalFiltered, type PalFilterOptions } from "./breeding";
 import type { BreedingDataset, Pal } from "./types";
 
 const UNREACHABLE = 10_000;
@@ -25,8 +25,7 @@ export interface PathResult {
   };
 }
 
-export type PathOptions = {
-  hideTerraria?: boolean;
+export type PathOptions = PalFilterOptions & {
   includeTargetAsParent?: boolean;
 };
 
@@ -72,7 +71,7 @@ export function findShortestPath(
     for (const partner of partners) {
       const child = findChild(dataset, current, partner.index);
       if (!child) continue;
-      if (options.hideTerraria && child.isTerraria) continue;
+      if (isPalFiltered(child, options)) continue;
 
       const nextRemaining = dataset.minSteps[child.index][targetIndex];
       if (!(nextRemaining < remaining)) continue;
@@ -338,7 +337,7 @@ function enumerateNearShortestSegmentPaths(
     for (const partner of partners) {
       const child = findChild(dataset, current, partner.index);
       if (!child) continue;
-      if (options.hideTerraria && child.isTerraria) continue;
+      if (isPalFiltered(child, options)) continue;
       if (visited.has(child.index)) continue;
 
       const childDist = dataset.minSteps[child.index]?.[targetIndex] ?? UNREACHABLE;
@@ -409,14 +408,12 @@ export function findMergeCandidates(
   const byKey = new Map<string, MergeCandidate>();
 
   const consider = (left: number, right: number, merge: number) => {
-    if (options.hideTerraria) {
-      if (
-        dataset.pals[left]?.isTerraria ||
-        dataset.pals[right]?.isTerraria ||
-        dataset.pals[merge]?.isTerraria
-      ) {
-        return;
-      }
+    if (
+      isPalFiltered(dataset.pals[left], options) ||
+      isPalFiltered(dataset.pals[right], options) ||
+      isPalFiltered(dataset.pals[merge], options)
+    ) {
+      return;
     }
 
     const costA = dataset.minSteps[parentAIndex]?.[left] ?? UNREACHABLE;
@@ -676,13 +673,13 @@ function isProgressPartner(
   options: PathOptions,
 ): boolean {
   if (fromIndex === tipIndex) return false;
-  if (options.hideTerraria && dataset.pals[partnerIndex]?.isTerraria) {
+  if (isPalFiltered(dataset.pals[partnerIndex], options)) {
     return false;
   }
 
   const child = findChild(dataset, fromIndex, partnerIndex);
   if (!child) return false;
-  if (options.hideTerraria && child.isTerraria) return false;
+  if (isPalFiltered(child, options)) return false;
 
   const remaining = dataset.minSteps[fromIndex]?.[tipIndex] ?? UNREACHABLE;
   if (remaining >= UNREACHABLE) return false;
@@ -833,7 +830,7 @@ function partnerPool(
   options: PathOptions,
 ): Pal[] {
   return dataset.pals.filter((p) => {
-    if (options.hideTerraria && p.isTerraria) return false;
+    if (isPalFiltered(p, options)) return false;
     if (!options.includeTargetAsParent && p.index === targetIndex) return false;
     return true;
   });
@@ -854,7 +851,7 @@ export interface OwnedBreedResult {
 export function multiPalBreeder(
   dataset: BreedingDataset,
   ownedIndexes: number[],
-  options: { hideTerraria?: boolean; generations?: number } = {},
+  options: PalFilterOptions & { generations?: number } = {},
 ): OwnedBreedResult {
   const generations = options.generations ?? 3;
   const available = new Set(ownedIndexes);
@@ -868,7 +865,7 @@ export function multiPalBreeder(
       for (let j = i; j < pool.length; j++) {
         const child = findChild(dataset, pool[i], pool[j]);
         if (!child) continue;
-        if (options.hideTerraria && child.isTerraria) continue;
+        if (isPalFiltered(child, options)) continue;
         if (available.has(child.index)) continue;
         newly.add(child.index);
       }
@@ -883,7 +880,7 @@ export function multiPalBreeder(
 
   const missing = dataset.pals
     .filter((p) => {
-      if (options.hideTerraria && p.isTerraria) return false;
+      if (isPalFiltered(p, options)) return false;
       return !available.has(p.index);
     })
     .sort(comparePals);

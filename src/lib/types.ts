@@ -29,6 +29,10 @@ export interface Pal {
   price: number | null;
   nocturnal: boolean;
   isTerraria: boolean;
+  /** Wild only in World Tree and not breedable from outside stock. */
+  isWorldTreeLocked: boolean;
+  /** World Tree habitat, but breedable from non–World Tree parents. */
+  isWorldTreeBreedable: boolean;
   work: WorkSuitability[];
 }
 
@@ -63,6 +67,7 @@ export interface DatasetMeta {
   trending: number[];
   features: {
     mutationSpeciesNote: string;
+    worldTreeNote?: string;
   };
   gameTarget: {
     minimum: string;
@@ -75,6 +80,9 @@ export interface DatasetMeta {
     db: string;
     breeding: string;
   };
+  terrariaCount?: number;
+  worldTreeLockedCount?: number;
+  worldTreeBreedableCount?: number;
 }
 
 export interface BreedingDataset {

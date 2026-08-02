@@ -39,6 +39,43 @@ const TRENDING = [
 
 const UNREACHABLE = 10000;
 
+/**
+ * World Tree habitat-only (Palworld 1.0+). Excludes pals that also spawn
+ * elsewhere (e.g. Majex at Sanctuary 2, Shaolong via Floating Islands raid).
+ * Orserk/Bastigor are catch-locked there; the rest are classified by breeding
+ * reachability from non–World Tree stock.
+ */
+const WORLD_TREE_HABITAT = new Set([
+  "Orserk",
+  "Bastigor",
+  "Wispaw",
+  "Univolt Cryst",
+  "Elgrove Cryst",
+  "Petallia Ignis",
+  "Beakon Cryst",
+  "Rayhound Cryst",
+  "Moldron Cryst",
+  "Sibelyx Primo",
+  "Starryon Primo",
+  "Dualith Noct",
+  "Tetroise Primo",
+  "Celesdir Noct",
+  "Snock Lux",
+  "Eidrolon Ignis",
+  "Flaracle",
+  "Dupin",
+  "Roujay",
+  "Venusa",
+  "Mycora",
+  "Loomen",
+  "Wistella",
+  "Solenne",
+  "Renjishi",
+  "Aegidron",
+  "Silvance",
+  "Dandilord",
+]);
+
 function sha256(buf) {
   return createHash("sha256").update(buf).digest("hex");
 }
@@ -100,6 +137,8 @@ function main() {
     price: p.Price ?? null,
     nocturnal: Boolean(p.Nocturnal),
     isTerraria: isTerraria(p.InternalName),
+    isWorldTreeLocked: false,
+    isWorldTreeBreedable: false,
     work: workEntries(p.WorkSuitability),
   }));
 
@@ -143,6 +182,34 @@ function main() {
     byChild[combos[i][2]].push(i);
   }
 
+  // Classify World Tree habitat pals: breedable from outside stock vs catch-locked.
+  const wtIndices = new Set(
+    pals.filter((p) => WORLD_TREE_HABITAT.has(p.name)).map((p) => p.index),
+  );
+  const reachable = new Set();
+  for (const p of pals) {
+    if (p.isTerraria || wtIndices.has(p.index)) continue;
+    reachable.add(p.index);
+  }
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const [a, b, c] of combos) {
+      if (reachable.has(c)) continue;
+      if (pals[a].isTerraria || pals[b].isTerraria || pals[c].isTerraria) {
+        continue;
+      }
+      if (reachable.has(a) && reachable.has(b)) {
+        reachable.add(c);
+        grew = true;
+      }
+    }
+  }
+  for (const index of wtIndices) {
+    if (reachable.has(index)) pals[index].isWorldTreeBreedable = true;
+    else pals[index].isWorldTreeLocked = true;
+  }
+
   // Compact min-steps matrix: only finite reachable edges as [from, to, steps]
   const minSteps = [];
   const stepMatrix = breeding.MinBreedingSteps ?? {};
@@ -180,6 +247,8 @@ function main() {
     specialGenderComboCount: specialGenders.length,
     missingComboCount: missing.size,
     terrariaCount: pals.filter((p) => p.isTerraria).length,
+    worldTreeLockedCount: pals.filter((p) => p.isWorldTreeLocked).length,
+    worldTreeBreedableCount: pals.filter((p) => p.isWorldTreeBreedable).length,
     minStepEdgeCount: minSteps.length,
     mutationPassiveCount: mutationPassives.length,
     trending,
@@ -197,6 +266,8 @@ function main() {
     features: {
       mutationSpeciesNote:
         "Official 1.0 notes: Mutation does not change child species. It can add Mutation passives and stronger stats. This app shows that overlay; it does not invent alternate mutation species tables.",
+      worldTreeNote:
+        "World Tree exclusives require catching inside the World Tree (self-breed only). World Tree breedables wild-spawn there but can be bred from non–World Tree parents.",
     },
   };
 
@@ -218,7 +289,7 @@ function main() {
   writeFileSync(join(dataDir, "manifest.json"), JSON.stringify(meta, null, 2));
 
   console.log(
-    `Normalized ${pals.length} pals, ${combos.length} combos, ${minSteps.length} step edges (db ${db.Version})`,
+    `Normalized ${pals.length} pals, ${combos.length} combos, ${minSteps.length} step edges (db ${db.Version}); WT locked ${meta.worldTreeLockedCount}, WT breedable ${meta.worldTreeBreedableCount}`,
   );
   if (missing.size) console.warn(`Skipped ${missing.size} unknown combos`);
 }
