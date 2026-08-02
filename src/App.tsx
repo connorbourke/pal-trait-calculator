@@ -12,9 +12,14 @@ import {
   loadDataset,
 } from "./lib/breeding";
 import {
-  findMergeTree,
-  findPathThroughWaypoints,
+  buildMergeTree,
+  filterChainCandidatesByPairingSearch,
+  filterMergeCandidatesByPairingSearch,
+  findChainCandidates,
+  findMergeCandidates,
   multiPalBreeder,
+  type MergeCandidate,
+  type PathResult,
 } from "./lib/path";
 import {
   loadHideTerraria,
@@ -26,10 +31,12 @@ import type { BreedingDataset, Mode, Pal } from "./lib/types";
 
 type PathPlannerMode = "chain" | "merge";
 
+const MERGE_PAGE_SIZE = 5;
+
 export default function App() {
   const [dataset, setDataset] = useState<BreedingDataset | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<Mode>("parents");
+  const [mode, setMode] = useState<Mode>("path");
   const [hideTerraria, setHideTerraria] = useState(true);
   const [includeTargetAsParent, setIncludeTargetAsParent] = useState(false);
   const [owned, setOwned] = useState<number[]>([]);
@@ -38,7 +45,7 @@ export default function App() {
   const [parentA, setParentA] = useState<Pal | null>(null);
   const [parentB, setParentB] = useState<Pal | null>(null);
   const [pathPlannerMode, setPathPlannerMode] =
-    useState<PathPlannerMode>("chain");
+    useState<PathPlannerMode>("merge");
   const [pathStart, setPathStart] = useState<Pal | null>(null);
   const [pathTarget, setPathTarget] = useState<Pal | null>(null);
   const [pathTraitA, setPathTraitA] = useState<Pal | null>(null);
@@ -46,6 +53,11 @@ export default function App() {
   const [waypoints, setWaypoints] = useState<Pal[]>([]);
   const [waypointPicker, setWaypointPicker] = useState<Pal | null>(null);
   const [ownedPicker, setOwnedPicker] = useState<Pal | null>(null);
+  const [pathVisibleCount, setPathVisibleCount] = useState(MERGE_PAGE_SIZE);
+  const [pathPairTags, setPathPairTags] = useState<Pal[]>([]);
+  const [pathExcludeTags, setPathExcludeTags] = useState<Pal[]>([]);
+  const [pathIncludePicker, setPathIncludePicker] = useState<Pal | null>(null);
+  const [pathExcludePicker, setPathExcludePicker] = useState<Pal | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,22 +123,18 @@ export default function App() {
     [hideTerraria, includeTargetAsParent],
   );
 
-  const pathResult = useMemo(() => {
-    if (!dataset || mode !== "path" || !pathTarget) return null;
-
-    if (pathPlannerMode === "chain") {
-      if (!pathStart) return null;
-      return findPathThroughWaypoints(
-        dataset,
-        pathStart.index,
-        waypoints.map((w) => w.index),
-        pathTarget.index,
-        pathOptions,
-      );
+  const mergeCandidates = useMemo((): MergeCandidate[] => {
+    if (
+      !dataset ||
+      mode !== "path" ||
+      pathPlannerMode !== "merge" ||
+      !pathTraitA ||
+      !pathTraitB ||
+      !pathTarget
+    ) {
+      return [];
     }
-
-    if (!pathTraitA || !pathTraitB) return null;
-    return findMergeTree(
+    return findMergeCandidates(
       dataset,
       pathTraitA.index,
       pathTraitB.index,
@@ -137,12 +145,179 @@ export default function App() {
     dataset,
     mode,
     pathPlannerMode,
+    pathTraitA,
+    pathTraitB,
+    pathTarget,
+    pathOptions,
+  ]);
+
+  const waypointKey = waypoints.map((w) => w.index).join(",");
+
+  useEffect(() => {
+    setPathVisibleCount(MERGE_PAGE_SIZE);
+    setPathPairTags([]);
+    setPathExcludeTags([]);
+    setPathIncludePicker(null);
+    setPathExcludePicker(null);
+  }, [
+    pathTraitA?.index,
+    pathTraitB?.index,
+    pathStart?.index,
+    pathTarget?.index,
+    pathPlannerMode,
+    hideTerraria,
+    includeTargetAsParent,
+    waypointKey,
+  ]);
+
+  const pathIncludeIndexes = useMemo(
+    () => pathPairTags.map((pal) => pal.index),
+    [pathPairTags],
+  );
+
+  const pathExcludeIndexes = useMemo(
+    () => pathExcludeTags.map((pal) => pal.index),
+    [pathExcludeTags],
+  );
+
+  const filteredMergeCandidates = useMemo((): MergeCandidate[] => {
+    if (!dataset || !pathTraitA || !pathTraitB || !pathTarget) {
+      return mergeCandidates;
+    }
+    if (pathIncludeIndexes.length === 0 && pathExcludeIndexes.length === 0) {
+      return mergeCandidates;
+    }
+    return filterMergeCandidatesByPairingSearch(
+      dataset,
+      pathTraitA.index,
+      pathTraitB.index,
+      pathTarget.index,
+      mergeCandidates,
+      pathIncludeIndexes,
+      pathExcludeIndexes,
+      pathOptions,
+    );
+  }, [
+    dataset,
+    pathTraitA,
+    pathTraitB,
+    pathTarget,
+    mergeCandidates,
+    pathIncludeIndexes,
+    pathExcludeIndexes,
+    pathOptions,
+  ]);
+
+  const mergePaths = useMemo((): PathResult[] => {
+    if (!dataset || !pathTraitA || !pathTraitB || !pathTarget) return [];
+    return filteredMergeCandidates
+      .slice(0, pathVisibleCount)
+      .map((candidate) =>
+        buildMergeTree(
+          dataset,
+          pathTraitA.index,
+          pathTraitB.index,
+          pathTarget.index,
+          candidate,
+          pathOptions,
+        ),
+      );
+  }, [
+    dataset,
+    pathTraitA,
+    pathTraitB,
+    pathTarget,
+    filteredMergeCandidates,
+    pathVisibleCount,
+    pathOptions,
+  ]);
+
+  const chainCandidates = useMemo((): PathResult[] => {
+    if (
+      !dataset ||
+      mode !== "path" ||
+      pathPlannerMode !== "chain" ||
+      !pathStart ||
+      !pathTarget
+    ) {
+      return [];
+    }
+    return findChainCandidates(
+      dataset,
+      pathStart.index,
+      waypoints.map((w) => w.index),
+      pathTarget.index,
+      pathOptions,
+    );
+  }, [
+    dataset,
+    mode,
+    pathPlannerMode,
+    pathStart,
+    pathTarget,
+    waypoints,
+    pathOptions,
+  ]);
+
+  const filteredChainCandidates = useMemo((): PathResult[] => {
+    if (pathIncludeIndexes.length === 0 && pathExcludeIndexes.length === 0) {
+      return chainCandidates;
+    }
+    return filterChainCandidatesByPairingSearch(
+      chainCandidates,
+      pathIncludeIndexes,
+      pathExcludeIndexes,
+    );
+  }, [chainCandidates, pathIncludeIndexes, pathExcludeIndexes]);
+
+  const chainPaths = useMemo(
+    () => filteredChainCandidates.slice(0, pathVisibleCount),
+    [filteredChainCandidates, pathVisibleCount],
+  );
+
+  useEffect(() => {
+    setPathVisibleCount(MERGE_PAGE_SIZE);
+  }, [pathIncludeIndexes, pathExcludeIndexes]);
+
+  const pathResult = useMemo(() => {
+    if (!dataset || mode !== "path" || !pathTarget) return null;
+
+    if (pathPlannerMode === "chain") {
+      if (!pathStart) return null;
+      if (filteredChainCandidates.length === 0) {
+        return {
+          steps: [],
+          totalBreeds: 10_000,
+          unreachable: true,
+          kind: "chain" as const,
+          summary: "No breeding route found for that setup",
+        };
+      }
+      return filteredChainCandidates[0] ?? null;
+    }
+
+    if (!pathTraitA || !pathTraitB) return null;
+    if (mergeCandidates.length === 0) {
+      return {
+        steps: [],
+        totalBreeds: 10_000,
+        unreachable: true,
+        kind: "merge" as const,
+        summary: "No merge tree found that uses both parents",
+      };
+    }
+    return mergePaths[0] ?? null;
+  }, [
+    dataset,
+    mode,
+    pathPlannerMode,
     pathStart,
     pathTarget,
     pathTraitA,
     pathTraitB,
-    waypoints,
-    pathOptions,
+    mergeCandidates,
+    mergePaths,
+    filteredChainCandidates,
   ]);
 
   const ownedResult = useMemo(() => {
@@ -184,6 +359,30 @@ export default function App() {
     setWaypoints((prev) => prev.filter((w) => w.index !== index));
   }
 
+  function addPathPairTag(pal: Pal) {
+    setPathPairTags((prev) => {
+      if (prev.some((tag) => tag.index === pal.index)) return prev;
+      return [...prev, pal];
+    });
+    setPathExcludeTags((prev) => prev.filter((tag) => tag.index !== pal.index));
+  }
+
+  function removePathPairTag(index: number) {
+    setPathPairTags((prev) => prev.filter((tag) => tag.index !== index));
+  }
+
+  function addPathExcludeTag(pal: Pal) {
+    setPathExcludeTags((prev) => {
+      if (prev.some((tag) => tag.index === pal.index)) return prev;
+      return [...prev, pal];
+    });
+    setPathPairTags((prev) => prev.filter((tag) => tag.index !== pal.index));
+  }
+
+  function removePathExcludeTag(index: number) {
+    setPathExcludeTags((prev) => prev.filter((tag) => tag.index !== index));
+  }
+
   function pickTrending(pal: Pal) {
     if (mode === "parents") setTarget(pal);
     else if (mode === "child") {
@@ -215,8 +414,8 @@ export default function App() {
         <p className="brand">Pal Trait Calculator</p>
         <h1 className="headline">Find the pair. Hatch the Pal.</h1>
         <p className="lede">
-          Look up combos, or plan trait routes — through waypoints, or by
-          merging two parents into one tree.
+          Plan trait routes by merging two parents — or look up combos, children,
+          and owned-box waves.
         </p>
       </header>
 
@@ -299,27 +498,27 @@ export default function App() {
                   <button
                     type="button"
                     role="tab"
-                    aria-selected={pathPlannerMode === "chain"}
-                    className={pathPlannerMode === "chain" ? "active" : undefined}
-                    onClick={() => setPathPlannerMode("chain")}
-                  >
-                    Route through
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
                     aria-selected={pathPlannerMode === "merge"}
                     className={pathPlannerMode === "merge" ? "active" : undefined}
                     onClick={() => setPathPlannerMode("merge")}
                   >
                     Merge two parents
                   </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={pathPlannerMode === "chain"}
+                    className={pathPlannerMode === "chain" ? "active" : undefined}
+                    onClick={() => setPathPlannerMode("chain")}
+                  >
+                    Route through
+                  </button>
                 </div>
 
                 <p className="hint-inline">
-                  {pathPlannerMode === "chain"
-                    ? "Shortest chain from a start Pal to a target, optionally forced through waypoint species (in order)."
-                    : "Build one breeding tree that uses both trait parents as roots — even if those two never breed with each other."}
+                  {pathPlannerMode === "merge"
+                    ? "Build breeding trees that use both trait parents as roots — even if those two never breed with each other. Multiple trees are listed shortest-first."
+                    : "Shortest chains from a start Pal to a target, optionally forced through waypoint species (in order). Multiple routes are listed shortest-first."}
                 </p>
 
                 {pathPlannerMode === "chain" ? (
@@ -489,6 +688,26 @@ export default function App() {
                 child={childResult}
                 pairs={parentPairs}
                 path={pathResult}
+                mergePaths={pathPlannerMode === "merge" ? mergePaths : []}
+                mergeTotalCount={filteredMergeCandidates.length}
+                mergeAllCount={mergeCandidates.length}
+                chainPaths={pathPlannerMode === "chain" ? chainPaths : []}
+                chainTotalCount={filteredChainCandidates.length}
+                chainAllCount={chainCandidates.length}
+                pathPairTags={pathPairTags}
+                pathExcludeTags={pathExcludeTags}
+                pathIncludePicker={pathIncludePicker}
+                pathExcludePicker={pathExcludePicker}
+                pathTagPals={selectablePals}
+                onPathIncludePickerChange={setPathIncludePicker}
+                onPathExcludePickerChange={setPathExcludePicker}
+                onAddPathPairTag={addPathPairTag}
+                onRemovePathPairTag={removePathPairTag}
+                onAddPathExcludeTag={addPathExcludeTag}
+                onRemovePathExcludeTag={removePathExcludeTag}
+                onLoadMorePaths={() =>
+                  setPathVisibleCount((n) => n + MERGE_PAGE_SIZE)
+                }
                 ownedResult={ownedResult}
                 browsePals={browsePals}
                 owned={ownedSet}

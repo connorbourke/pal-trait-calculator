@@ -9,6 +9,8 @@ interface Props {
   value: Pal | null;
   onChange: (pal: Pal | null) => void;
   placeholder: string;
+  /** After picking a Pal, clear the input instead of keeping the name (tag pickers). */
+  clearAfterSelect?: boolean;
 }
 
 export function PalSelect({
@@ -17,6 +19,7 @@ export function PalSelect({
   value,
   onChange,
   placeholder,
+  clearAfterSelect = false,
 }: Props) {
   const id = useId();
   const listId = `${id}-list`;
@@ -34,15 +37,17 @@ export function PalSelect({
       if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
         if (value) setQuery(value.name);
+        else if (clearAfterSelect) setQuery("");
       }
     }
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
-  }, [value]);
+  }, [value, clearAfterSelect]);
 
   useEffect(() => {
     if (value) setQuery(value.name);
-  }, [value]);
+    else if (clearAfterSelect) setQuery("");
+  }, [value, clearAfterSelect]);
 
   return (
     <div className="pal-select" ref={rootRef}>
@@ -69,7 +74,7 @@ export function PalSelect({
           onFocus={() => setOpen(true)}
           autoComplete="off"
         />
-        {value ? (
+        {value || query ? (
           <button
             type="button"
             className="clear"
@@ -98,8 +103,13 @@ export function PalSelect({
                   aria-selected={value?.index === pal.index}
                   onClick={() => {
                     onChange(pal);
-                    setQuery(pal.name);
-                    setOpen(false);
+                    if (clearAfterSelect) {
+                      setQuery("");
+                      setOpen(false);
+                    } else {
+                      setQuery(pal.name);
+                      setOpen(false);
+                    }
                   }}
                 >
                   <PalPortrait pal={pal} size="sm" layout="row" />

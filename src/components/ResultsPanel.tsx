@@ -4,6 +4,7 @@ import type { ParentPair } from "../lib/breeding";
 import type { OwnedBreedResult, PathResult, PathStep } from "../lib/path";
 import { formatWork } from "../lib/breeding";
 import { PalPortrait } from "./PalPortrait";
+import { PalSelect } from "./PalSelect";
 
 interface Props {
   mode: Mode;
@@ -19,6 +20,24 @@ interface Props {
   child: Pal | null;
   pairs: ParentPair[];
   path: PathResult | null;
+  mergePaths: PathResult[];
+  mergeTotalCount: number;
+  mergeAllCount: number;
+  chainPaths: PathResult[];
+  chainTotalCount: number;
+  chainAllCount: number;
+  pathPairTags: Pal[];
+  pathExcludeTags: Pal[];
+  pathIncludePicker: Pal | null;
+  pathExcludePicker: Pal | null;
+  pathTagPals: Pal[];
+  onPathIncludePickerChange: (pal: Pal | null) => void;
+  onPathExcludePickerChange: (pal: Pal | null) => void;
+  onAddPathPairTag: (pal: Pal) => void;
+  onRemovePathPairTag: (index: number) => void;
+  onAddPathExcludeTag: (pal: Pal) => void;
+  onRemovePathExcludeTag: (index: number) => void;
+  onLoadMorePaths: () => void;
   ownedResult: OwnedBreedResult | null;
   browsePals: Pal[];
   owned: Set<number>;
@@ -43,15 +62,21 @@ export function ResultsPanel(props: Props) {
 }
 
 function pairMatchesQuery(pair: ParentPair, query: string): boolean {
+  return palsMatchQuery([pair.parentA, pair.parentB], query);
+}
+
+/** Match visible labels (name / Paldeck #) — not internal game IDs. */
+function palsMatchQuery(
+  pals: Pick<Pal, "name" | "dex" | "dexNo">[],
+  query: string,
+): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
 
   const tokens = q.split(/[\s,+]+/).filter(Boolean);
   if (tokens.length === 0) return true;
 
-  // Only match visible labels (name / Paldeck #) — not internal game IDs,
-  // which caused false hits like "shroom" matching Mycora (MushroomLady).
-  const haystacks = [pair.parentA, pair.parentB].map((pal) =>
+  const haystacks = pals.map((pal) =>
     [pal.name, pal.dex, String(pal.dexNo)].join(" ").toLowerCase(),
   );
 
@@ -239,7 +264,24 @@ function PathResults({
   pathTraitB,
   pathPlannerMode,
   waypoints,
-  path,
+  mergePaths,
+  mergeTotalCount,
+  mergeAllCount,
+  chainPaths,
+  chainTotalCount,
+  chainAllCount,
+  pathPairTags,
+  pathExcludeTags,
+  pathIncludePicker,
+  pathExcludePicker,
+  pathTagPals,
+  onPathIncludePickerChange,
+  onPathExcludePickerChange,
+  onAddPathPairTag,
+  onRemovePathPairTag,
+  onAddPathExcludeTag,
+  onRemovePathExcludeTag,
+  onLoadMorePaths,
 }: Props) {
   const ready =
     pathPlannerMode === "chain"
@@ -253,88 +295,455 @@ function PathResults({
         <p className="quiet">
           {pathPlannerMode === "chain"
             ? "Pick a start Pal and target. Optionally add waypoints that the chain must pass through."
-            : "Pick two trait parents and a target. The planner merges both lineages into one tree."}
+            : "Pick two trait parents and a target. The planner lists merge trees shortest-first."}
         </p>
       </section>
     );
   }
 
-  if (!path) return null;
+  const tagProps = {
+    pathPairTags,
+    pathExcludeTags,
+    pathIncludePicker,
+    pathExcludePicker,
+    pathTagPals,
+    onPathIncludePickerChange,
+    onPathExcludePickerChange,
+    onAddPathPairTag,
+    onRemovePathPairTag,
+    onAddPathExcludeTag,
+    onRemovePathExcludeTag,
+  };
 
-  if (path.unreachable && path.steps.length === 0) {
+  if (pathPlannerMode === "merge") {
+    return (
+      <MergePathResults
+        pathTraitA={pathTraitA}
+        pathTraitB={pathTraitB}
+        pathTarget={pathTarget}
+        mergePaths={mergePaths}
+        mergeTotalCount={mergeTotalCount}
+        mergeAllCount={mergeAllCount}
+        onLoadMorePaths={onLoadMorePaths}
+        {...tagProps}
+      />
+    );
+  }
+
+  return (
+    <ChainPathResults
+      pathStart={pathStart}
+      pathTarget={pathTarget}
+      waypoints={waypoints}
+      chainPaths={chainPaths}
+      chainTotalCount={chainTotalCount}
+      chainAllCount={chainAllCount}
+      onLoadMorePaths={onLoadMorePaths}
+      {...tagProps}
+    />
+  );
+}
+
+type PathTagFilterProps = {
+  pathPairTags: Pal[];
+  pathExcludeTags: Pal[];
+  pathIncludePicker: Pal | null;
+  pathExcludePicker: Pal | null;
+  pathTagPals: Pal[];
+  onPathIncludePickerChange: (pal: Pal | null) => void;
+  onPathExcludePickerChange: (pal: Pal | null) => void;
+  onAddPathPairTag: (pal: Pal) => void;
+  onRemovePathPairTag: (index: number) => void;
+  onAddPathExcludeTag: (pal: Pal) => void;
+  onRemovePathExcludeTag: (index: number) => void;
+};
+
+function PathPairingTagFilters({
+  pathPairTags,
+  pathExcludeTags,
+  pathIncludePicker,
+  pathExcludePicker,
+  pathTagPals,
+  onPathIncludePickerChange,
+  onPathExcludePickerChange,
+  onAddPathPairTag,
+  onRemovePathPairTag,
+  onAddPathExcludeTag,
+  onRemovePathExcludeTag,
+}: PathTagFilterProps) {
+  const usedIndexes = new Set([
+    ...pathPairTags.map((pal) => pal.index),
+    ...pathExcludeTags.map((pal) => pal.index),
+  ]);
+  const tagPickerPals = pathTagPals.filter((pal) => !usedIndexes.has(pal.index));
+
+  return (
+    <div className="merge-tag-filters">
+      <div className="merge-tag-filter">
+        <PalSelect
+          label="Must include pairing"
+          pals={tagPickerPals}
+          value={pathIncludePicker}
+          onChange={(pal) => {
+            onPathIncludePickerChange(null);
+            if (pal) onAddPathPairTag(pal);
+          }}
+          placeholder="Add a Pal you can breed with…"
+          clearAfterSelect
+        />
+        {pathPairTags.length > 0 ? (
+          <div className="owned-selected">
+            {pathPairTags.map((pal) => (
+              <button
+                key={pal.index}
+                type="button"
+                className="trend-chip owned-chip"
+                onClick={() => onRemovePathPairTag(pal.index)}
+                title="Remove include tag"
+              >
+                <PalPortrait pal={pal} size="sm" layout="row" />
+                <span className="remove-x" aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="quiet">
+            Tag owned Pals you want in the plan. Multiple tags use AND.
+          </p>
+        )}
+      </div>
+
+      <div className="merge-tag-filter">
+        <PalSelect
+          label="Exclude from path"
+          pals={tagPickerPals}
+          value={pathExcludePicker}
+          onChange={(pal) => {
+            onPathExcludePickerChange(null);
+            if (pal) onAddPathExcludeTag(pal);
+          }}
+          placeholder="Hide routes that need this Pal…"
+          clearAfterSelect
+        />
+        {pathExcludeTags.length > 0 ? (
+          <div className="owned-selected">
+            {pathExcludeTags.map((pal) => (
+              <button
+                key={pal.index}
+                type="button"
+                className="trend-chip owned-chip exclude-chip"
+                onClick={() => onRemovePathExcludeTag(pal.index)}
+                title="Remove exclude tag"
+              >
+                <PalPortrait pal={pal} size="sm" layout="row" />
+                <span className="remove-x" aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="quiet">
+            Tag Pals you don’t own to hide routes that rely on them.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ChainPathResults({
+  pathStart,
+  pathTarget,
+  waypoints,
+  chainPaths,
+  chainTotalCount,
+  chainAllCount,
+  onLoadMorePaths,
+  ...tagProps
+}: {
+  pathStart: Pal | null;
+  pathTarget: Pal | null;
+  waypoints: Pal[];
+  chainPaths: PathResult[];
+  chainTotalCount: number;
+  chainAllCount: number;
+  onLoadMorePaths: () => void;
+} & PathTagFilterProps) {
+  if (
+    pathStart &&
+    pathTarget &&
+    pathStart.index === pathTarget.index &&
+    waypoints.length === 0
+  ) {
     return (
       <section className="results">
         <h2>Trait path planner</h2>
-        <p className="quiet">
-          {path.summary ?? "No breeding route found for that setup."}
-        </p>
+        <p className="quiet">Already at the target — no breeds needed.</p>
       </section>
     );
   }
 
+  if (chainAllCount === 0) {
+    return (
+      <section className="results">
+        <h2>Trait path planner</h2>
+        <p className="quiet">No breeding route found for that setup.</p>
+      </section>
+    );
+  }
+
+  const tagsActive =
+    tagProps.pathPairTags.length > 0 || tagProps.pathExcludeTags.length > 0;
+  const reachable = chainPaths.filter((p) => !p.unreachable);
+  const showing = chainPaths.length;
+  const remaining = Math.max(0, chainTotalCount - showing);
+
+  return (
+    <section className="results">
+      <div className="results-head">
+        <div className="results-target">
+          {pathStart ? (
+            <PalPortrait pal={pathStart} size="md" layout="row" />
+          ) : null}
+          {waypoints.map((w) => (
+            <span key={w.index} className="path-inline">
+              <span className="plus">→</span>
+              <PalPortrait pal={w} size="sm" layout="row" />
+            </span>
+          ))}
+          <span className="plus">→</span>
+          {pathTarget ? (
+            <PalPortrait pal={pathTarget} size="md" layout="row" />
+          ) : null}
+        </div>
+        <p className="count">
+          {chainTotalCount.toLocaleString()}
+          {tagsActive ? ` of ${chainAllCount.toLocaleString()}` : ""} route
+          {chainTotalCount === 1 ? "" : "s"}
+          {showing < chainTotalCount
+            ? ` · showing ${showing.toLocaleString()}`
+            : ""}
+        </p>
+      </div>
+
+      <PathPairingTagFilters {...tagProps} />
+
+      <p className="quiet">
+        Species-level plans sorted by fewest breeds (including routes up to +2
+        breeds) — passives/IVs are not simulated.
+      </p>
+
+      {chainTotalCount === 0 ? (
+        <p className="quiet">No routes match those pairing tags.</p>
+      ) : (
+        <>
+          <div className="merge-tree-list">
+            {reachable.map((path, index) => (
+              <ChainRouteCard
+                key={chainRouteKey(path, index)}
+                path={path}
+                index={index}
+              />
+            ))}
+          </div>
+
+          {remaining > 0 ? (
+            <button type="button" className="load-more" onClick={onLoadMorePaths}>
+              Load more
+              <span className="meta-inline">
+                ({Math.min(5, remaining).toLocaleString()} of{" "}
+                {remaining.toLocaleString()} remaining)
+              </span>
+            </button>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
+
+function MergePathResults({
+  pathTraitA,
+  pathTraitB,
+  pathTarget,
+  mergePaths,
+  mergeTotalCount,
+  mergeAllCount,
+  onLoadMorePaths,
+  ...tagProps
+}: {
+  pathTraitA: Pal | null;
+  pathTraitB: Pal | null;
+  pathTarget: Pal | null;
+  mergePaths: PathResult[];
+  mergeTotalCount: number;
+  mergeAllCount: number;
+  onLoadMorePaths: () => void;
+} & PathTagFilterProps) {
+  if (
+    pathTraitA &&
+    pathTraitB &&
+    pathTarget &&
+    pathTraitA.index === pathTarget.index &&
+    pathTraitB.index === pathTarget.index
+  ) {
+    return (
+      <section className="results">
+        <h2>Trait path planner</h2>
+        <p className="quiet">Already the target species — no breeds needed.</p>
+      </section>
+    );
+  }
+
+  if (mergeAllCount === 0) {
+    return (
+      <section className="results">
+        <h2>Trait path planner</h2>
+        <p className="quiet">No merge tree found that uses both parents.</p>
+      </section>
+    );
+  }
+
+  const tagsActive =
+    tagProps.pathPairTags.length > 0 || tagProps.pathExcludeTags.length > 0;
+  const reachable = mergePaths.filter((p) => !p.unreachable);
+  const showing = mergePaths.length;
+  const remaining = Math.max(0, mergeTotalCount - showing);
+
+  return (
+    <section className="results">
+      <div className="results-head">
+        <div className="results-target">
+          {pathTraitA ? (
+            <PalPortrait pal={pathTraitA} size="md" layout="row" />
+          ) : null}
+          <span className="plus">+</span>
+          {pathTraitB ? (
+            <PalPortrait pal={pathTraitB} size="md" layout="row" />
+          ) : null}
+          <span className="plus">→</span>
+          {pathTarget ? (
+            <PalPortrait pal={pathTarget} size="md" layout="row" />
+          ) : null}
+        </div>
+        <p className="count">
+          {mergeTotalCount.toLocaleString()}
+          {tagsActive ? ` of ${mergeAllCount.toLocaleString()}` : ""} merge
+          tree
+          {mergeTotalCount === 1 ? "" : "s"}
+          {showing < mergeTotalCount
+            ? ` · showing ${showing.toLocaleString()}`
+            : ""}
+        </p>
+      </div>
+
+      <PathPairingTagFilters {...tagProps} />
+
+      <p className="quiet">
+        Species-level plans sorted by fewest breeds — passives/IVs are not
+        simulated.
+      </p>
+
+      {mergeTotalCount === 0 ? (
+        <p className="quiet">No merge trees match those pairing tags.</p>
+      ) : (
+        <>
+          <div className="merge-tree-list">
+            {reachable.map((path, index) => (
+              <MergeTreeCard
+                key={mergeTreeKey(path, index)}
+                path={path}
+                index={index}
+              />
+            ))}
+          </div>
+
+          {remaining > 0 ? (
+            <button type="button" className="load-more" onClick={onLoadMorePaths}>
+              Load more
+              <span className="meta-inline">
+                ({Math.min(5, remaining).toLocaleString()} of{" "}
+                {remaining.toLocaleString()} remaining)
+              </span>
+            </button>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
+
+function chainRouteKey(path: PathResult, index: number): string {
+  const body = path.steps
+    .map((s) => `${s.from.index}-${s.partner.index}-${s.child.index}`)
+    .join(">");
+  return `${body || "empty"}-${index}`;
+}
+
+function ChainRouteCard({ path, index }: { path: PathResult; index: number }) {
+  return (
+    <article className="merge-tree-card">
+      <div className="merge-tree-card-head">
+        <h3>Route {index + 1}</h3>
+        <p className="count">
+          {path.totalBreeds} breed{path.totalBreeds === 1 ? "" : "s"}
+        </p>
+      </div>
+      {path.summary ? <p className="hint-inline">{path.summary}</p> : null}
+      {path.steps.length === 0 ? (
+        <p className="quiet">Already at the target — no breeds needed.</p>
+      ) : (
+        <PathSection title="Breeding steps" steps={path.steps} />
+      )}
+    </article>
+  );
+}
+
+function mergeTreeKey(path: PathResult, index: number): string {
+  if (path.merge) {
+    return `${path.merge.left.index}-${path.merge.right.index}-${path.merge.child.index}-${index}`;
+  }
+  return `merge-${index}`;
+}
+
+function MergeTreeCard({ path, index }: { path: PathResult; index: number }) {
   const branchA = path.steps.filter((s) => s.role === "branch-a");
   const branchB = path.steps.filter((s) => s.role === "branch-b");
   const mergeSteps = path.steps.filter((s) => s.role === "merge");
   const finishSteps = path.steps.filter((s) => s.role === "finish");
 
   return (
-    <section className="results">
-      <div className="results-head">
-        <div className="results-target">
-          {pathPlannerMode === "chain" && pathStart ? (
-            <>
-              <PalPortrait pal={pathStart} size="md" layout="row" />
-              {waypoints.map((w) => (
-                <span key={w.index} className="path-inline">
-                  <span className="plus">→</span>
-                  <PalPortrait pal={w} size="sm" layout="row" />
-                </span>
-              ))}
-              <span className="plus">→</span>
-              {pathTarget ? (
-                <PalPortrait pal={pathTarget} size="md" layout="row" />
-              ) : null}
-            </>
-          ) : (
-            <>
-              {pathTraitA ? (
-                <PalPortrait pal={pathTraitA} size="md" layout="row" />
-              ) : null}
-              <span className="plus">+</span>
-              {pathTraitB ? (
-                <PalPortrait pal={pathTraitB} size="md" layout="row" />
-              ) : null}
-              <span className="plus">→</span>
-              {pathTarget ? (
-                <PalPortrait pal={pathTarget} size="md" layout="row" />
-              ) : null}
-            </>
-          )}
-        </div>
+    <article className="merge-tree-card">
+      <div className="merge-tree-card-head">
+        <h3>
+          Tree {index + 1}
+          {path.merge ? (
+            <span className="merge-tree-label">
+              {" "}
+              · {path.merge.left.name} × {path.merge.right.name} →{" "}
+              {path.merge.child.name}
+            </span>
+          ) : null}
+        </h3>
         <p className="count">
           {path.totalBreeds} breed{path.totalBreeds === 1 ? "" : "s"}
-          {path.unreachable ? " · partial" : ""}
         </p>
       </div>
 
-      {path.summary ? <p className="hint-inline">{path.summary}</p> : null}
-      <p className="quiet">
-        Species-level plan for trait routing — passives/IVs are not simulated.
-      </p>
-
       {path.steps.length === 0 ? (
         <p className="quiet">Already at the target — no breeds needed.</p>
-      ) : pathPlannerMode === "merge" ? (
+      ) : (
         <div className="tree-sections">
           <PathSection title="Branch A — from trait parent A" steps={branchA} />
           <PathSection title="Branch B — from trait parent B" steps={branchB} />
           <PathSection title="Merge — combine the two branches" steps={mergeSteps} />
           <PathSection title="Finish — to target" steps={finishSteps} />
         </div>
-      ) : (
-        <PathSection title="Breeding steps" steps={path.steps} />
       )}
-    </section>
+    </article>
   );
 }
 
