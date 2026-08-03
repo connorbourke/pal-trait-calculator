@@ -8,3 +8,4 @@ data/*.source.json
 .vite
 font-export
 .vercel
+tmp-eidrolon-frames

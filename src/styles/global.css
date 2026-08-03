@@ -556,7 +556,7 @@ a {
 
 .pal-menu {
   position: absolute;
-  z-index: 8;
+  z-index: 50;
   left: 0;
   right: 0;
   top: calc(100% + 0.4rem);
@@ -1192,5 +1192,75 @@ a {
 
   body {
     transition: none;
+  }
+
+  .theme-pet {
+    animation: none;
+  }
+
+  .theme-pet-sprite {
+    animation: none;
+  }
+}
+
+/* Theme pet — decorative draggable pixel sprite */
+.theme-pet {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: end center;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+  will-change: transform;
+}
+
+.theme-pet.dragging {
+  cursor: grabbing;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.45));
+  z-index: 60;
+}
+
+.theme-pet.dragging .theme-pet-sprite {
+  animation: none;
+}
+
+.theme-pet-sprite {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  animation: pet-bob 1.8s ease-in-out infinite;
+}
+
+.theme-pet img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+}
+
+@media (min-width: 640px) {
+  .theme-pet {
+    width: 144px;
+    height: 144px;
+  }
+}
+
+@keyframes pet-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
   }
 }

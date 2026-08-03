@@ -3,6 +3,7 @@ import { ModeToggle } from "./components/ModeToggle";
 import { PalPortrait } from "./components/PalPortrait";
 import { PalSelect } from "./components/PalSelect";
 import { ResultsPanel } from "./components/ResultsPanel";
+import { ThemePet } from "./components/ThemePet";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { TrendingPals } from "./components/TrendingPals";
 import {
@@ -458,6 +459,7 @@ export default function App() {
   return (
     <div className="page">
       <div className="atmosphere" aria-hidden="true" />
+      <ThemePet theme={theme} />
       <header className="hero">
         <div className="hero-top">
           <p className="brand">Pal Trait Calculator</p>

@@ -49,3 +49,42 @@ export function loadHideWorldTreeBreedable(): boolean {
 export function saveHideWorldTreeBreedable(value: boolean): void {
   localStorage.setItem(HIDE_WT_BREEDABLE_KEY, value ? "1" : "0");
 }
+
+const PET_POS_KEY = "pal-trait-calculator.petPos";
+
+export type PetPosition = { x: number; y: number };
+
+export function loadPetPositions(): Partial<
+  Record<"eidrolon" | "sekhmet", PetPosition>
+> {
+  try {
+    const raw = localStorage.getItem(PET_POS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object") return {};
+    const out: Partial<Record<"eidrolon" | "sekhmet", PetPosition>> = {};
+    for (const key of ["eidrolon", "sekhmet"] as const) {
+      const row = (parsed as Record<string, unknown>)[key];
+      if (
+        row &&
+        typeof row === "object" &&
+        typeof (row as PetPosition).x === "number" &&
+        typeof (row as PetPosition).y === "number"
+      ) {
+        out[key] = { x: (row as PetPosition).x, y: (row as PetPosition).y };
+      }
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export function savePetPosition(
+  theme: "eidrolon" | "sekhmet",
+  pos: PetPosition,
+): void {
+  const all = loadPetPositions();
+  all[theme] = pos;
+  localStorage.setItem(PET_POS_KEY, JSON.stringify(all));
+}
