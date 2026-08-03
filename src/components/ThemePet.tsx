@@ -6,7 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
-  loadPetPositions,
+  loadPetPosition,
   savePetPosition,
   type PetPosition,
 } from "../lib/storage";
@@ -86,7 +86,7 @@ interface Props {
 
 export function ThemePet({ theme }: Props) {
   const [pos, setPos] = useState<PetPosition>(() => {
-    const saved = loadPetPositions()[theme];
+    const saved = loadPetPosition();
     return saved ? clampPos(saved, theme) : defaultPos(theme);
   });
   const [dragging, setDragging] = useState(false);
@@ -95,10 +95,10 @@ export function ThemePet({ theme }: Props) {
   const posRef = useRef(pos);
   posRef.current = pos;
 
+  // Theme only swaps art/size — keep the same shared position (re-clamp for box).
   useEffect(() => {
-    const saved = loadPetPositions()[theme];
     setBox(petBox(theme));
-    setPos(saved ? clampPos(saved, theme) : defaultPos(theme));
+    setPos((prev) => clampPos(prev, theme));
   }, [theme]);
 
   useEffect(() => {
@@ -148,9 +148,9 @@ export function ThemePet({ theme }: Props) {
         /* already released */
       }
       setDragging(false);
-      savePetPosition(theme, posRef.current);
+      savePetPosition(posRef.current);
     },
-    [dragging, theme],
+    [dragging],
   );
 
   return (

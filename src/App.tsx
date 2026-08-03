@@ -3,15 +3,16 @@ import { ModeToggle } from "./components/ModeToggle";
 import { PalPortrait } from "./components/PalPortrait";
 import { PalSelect } from "./components/PalSelect";
 import { ResultsPanel } from "./components/ResultsPanel";
+import {
+  SettingsDrawer,
+  SettingsGearButton,
+} from "./components/SettingsDrawer";
 import { ThemePet } from "./components/ThemePet";
-import { ThemeToggle } from "./components/ThemeToggle";
-import { TrendingPals } from "./components/TrendingPals";
 import {
   childrenFromParent,
   filterPals,
   findChild,
   findParents,
-  isPalFiltered,
   loadDataset,
 } from "./lib/breeding";
 import {
@@ -29,10 +30,12 @@ import {
   loadHideWorldTreeBreedable,
   loadHideWorldTreeLocked,
   loadOwned,
+  loadShowPet,
   saveHideTerraria,
   saveHideWorldTreeBreedable,
   saveHideWorldTreeLocked,
   saveOwned,
+  saveShowPet,
 } from "./lib/storage";
 import {
   applyTheme,
@@ -51,6 +54,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("path");
   const [theme, setTheme] = useState<ThemeId>(() => loadTheme());
+  const [showPet, setShowPet] = useState(() => loadShowPet());
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [hideTerraria, setHideTerraria] = useState(true);
   const [hideWorldTreeLocked, setHideWorldTreeLocked] = useState(true);
   const [hideWorldTreeBreedable, setHideWorldTreeBreedable] = useState(false);
@@ -89,6 +94,7 @@ export default function App() {
         setHideWorldTreeLocked(loadHideWorldTreeLocked());
         setHideWorldTreeBreedable(loadHideWorldTreeBreedable());
         setOwned(loadOwned());
+        setShowPet(loadShowPet());
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -106,6 +112,11 @@ export default function App() {
     applyTheme(next);
   }
 
+  function updateShowPet(next: boolean) {
+    setShowPet(next);
+    saveShowPet(next);
+  }
+
   const ownedSet = useMemo(() => new Set(owned), [owned]);
 
   const filterOptions = useMemo(
@@ -120,13 +131,6 @@ export default function App() {
   const selectablePals = useMemo(() => {
     if (!dataset) return [];
     return filterPals(dataset.pals, filterOptions);
-  }, [dataset, filterOptions]);
-
-  const trending = useMemo(() => {
-    if (!dataset) return [];
-    return dataset.meta.trending
-      .map((index) => dataset.pals[index])
-      .filter((p) => p && !isPalFiltered(p, filterOptions));
   }, [dataset, filterOptions]);
 
   const parentPairs = useMemo(() => {
@@ -432,25 +436,6 @@ export default function App() {
     setPathExcludeTags((prev) => prev.filter((tag) => tag.index !== index));
   }
 
-  function pickTrending(pal: Pal) {
-    if (mode === "parents") setTarget(pal);
-    else if (mode === "child") {
-      if (!parentA) setParentA(pal);
-      else if (!parentB) setParentB(pal);
-      else setParentA(pal);
-    } else if (mode === "path") {
-      if (pathPlannerMode === "chain") {
-        if (!pathStart) setPathStart(pal);
-        else if (!pathTarget) setPathTarget(pal);
-        else addWaypoint(pal);
-      } else if (!pathTraitA) setPathTraitA(pal);
-      else if (!pathTraitB) setPathTraitB(pal);
-      else setPathTarget(pal);
-    } else if (mode === "owned" || mode === "browse") {
-      toggleOwned(pal.index);
-    }
-  }
-
   function swapParents() {
     setParentA(parentB);
     setParentB(parentA);
@@ -459,11 +444,14 @@ export default function App() {
   return (
     <div className="page">
       <div className="atmosphere" aria-hidden="true" />
-      <ThemePet theme={theme} />
+      {showPet ? <ThemePet theme={theme} /> : null}
       <header className="hero">
         <div className="hero-top">
           <p className="brand">Pal Trait Calculator</p>
-          <ThemeToggle theme={theme} onChange={updateTheme} />
+          <SettingsGearButton
+            open={settingsOpen}
+            onClick={() => setSettingsOpen(true)}
+          />
         </div>
         <h1 className="headline">Find the pair. Hatch the Pal.</h1>
         <p className="lede">
@@ -471,6 +459,15 @@ export default function App() {
           and owned-box waves.
         </p>
       </header>
+
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        theme={theme}
+        onThemeChange={updateTheme}
+        showPet={showPet}
+        onShowPetChange={updateShowPet}
+      />
 
       <main className="calculator" aria-label="Breeding calculator">
         {error ? <p className="status error">{error}</p> : null}
@@ -521,16 +518,13 @@ export default function App() {
                     saveHideWorldTreeLocked(hideWorldTreeLocked);
                     saveHideWorldTreeBreedable(hideWorldTreeBreedable);
                     saveTheme(theme);
+                    saveShowPet(showPet);
                   }}
                 >
                   Save preferences
                 </button>
               </div>
             </div>
-
-            {(mode === "parents" || mode === "child") && (
-              <TrendingPals pals={trending} onPick={pickTrending} />
-            )}
 
             {mode === "parents" ? (
               <div className="selectors">

@@ -6,8 +6,8 @@ interface Props {
 }
 
 const OPTIONS: { id: ThemeId; label: string; hint: string }[] = [
-  { id: "eidrolon", label: "Eidrolon", hint: "Night" },
-  { id: "sekhmet", label: "Sekhmet", hint: "Day" },
+  { id: "eidrolon", label: "Eidrolon", hint: "Dark" },
+  { id: "sekhmet", label: "Sekhmet", hint: "Light" },
 ];
 
 export function ThemeToggle({ theme, onChange }: Props) {
