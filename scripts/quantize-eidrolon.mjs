@@ -129,17 +129,20 @@ function writePng(path, w, h, rows) {
   );
 }
 
+// White / black / cyan Eidrolon palette (matches idle identity)
 const PALETTE = [
   [0, 0, 0, 0],
-  [10, 10, 14, 255],
-  [22, 22, 31, 255],
-  [46, 46, 58, 255],
-  [197, 206, 218, 255],
-  [242, 245, 250, 255],
-  [60, 232, 255, 255],
-  [26, 160, 188, 255],
-  [158, 240, 255, 255],
-  [12, 12, 20, 255],
+  [8, 8, 12, 255], // outline
+  [18, 18, 24, 255], // deep black
+  [36, 38, 48, 255], // charcoal body
+  [58, 62, 74, 255], // mid grey
+  [168, 176, 188, 255], // pale grey
+  [220, 226, 234, 255], // near-white body
+  [245, 248, 252, 255], // bright white
+  [40, 210, 235, 255], // cyan mid
+  [70, 235, 255, 255], // cyan bright
+  [20, 140, 170, 255], // cyan deep
+  [140, 245, 255, 255], // cyan glow
 ];
 
 function dist(a, b) {
@@ -157,6 +160,12 @@ function isColorful(p) {
   return p[2] > p[0] + 20 && p[2] > 60;
 }
 
+function isBg(p) {
+  if (p[3] < 40) return true;
+  // solid black draft backgrounds
+  return p[0] < 18 && p[1] < 18 && p[2] < 22;
+}
+
 if (!existsSync(srcPath)) {
   console.error("Missing", srcPath);
   process.exit(1);
@@ -169,7 +178,8 @@ let maxx = 0;
 let maxy = 0;
 for (let y = 0; y < h; y++) {
   for (let x = 0; x < w; x++) {
-    if (rows[y][x * 4 + 3] > 40) {
+    const p = pixel(rows, y, x);
+    if (!isBg(p)) {
       minx = Math.min(minx, x);
       maxx = Math.max(maxx, x);
       miny = Math.min(miny, y);
@@ -177,7 +187,7 @@ for (let y = 0; y < h; y++) {
     }
   }
 }
-// Tight crop so the pet fills the 96px frame (less empty margin → feels larger)
+// Tight crop; fit HEIGHT first so Eidrolon matches Sekhmet's tall presence
 const pad = 2;
 minx = Math.max(0, minx - pad);
 miny = Math.max(0, miny - pad);
@@ -185,12 +195,13 @@ maxx = Math.min(w - 1, maxx + pad);
 maxy = Math.min(h - 1, maxy + pad);
 const cw = maxx - minx + 1;
 const ch = maxy - miny + 1;
-const tw = 96;
-const th = Math.max(64, Math.round((ch * tw) / cw));
+// Height-first; width follows aspect (flexible, not forced square)
+const outH = 96;
+const tw = Math.max(52, Math.min(112, Math.round((cw * outH) / ch)));
+const th = outH;
 
 function nearestPalette(p) {
-  if (p[3] < 80) return PALETTE[0];
-  // Bias bright cyan/teal toward eye/wing accents so pupils don't grey out
+  if (p[3] < 80 || isBg(p)) return PALETTE[0];
   const isCyan =
     p[2] > p[0] + 25 && p[1] > p[0] + 10 && p[2] > 120 && p[1] > 90;
   if (isCyan) {
@@ -202,7 +213,7 @@ function nearestPalette(p) {
   return PALETTE.slice(1).reduce((a, b) => (dist(p, a) < dist(p, b) ? a : b));
 }
 
-const out = [];
+const scaled = [];
 for (let y = 0; y < th; y++) {
   const sy = miny + Math.floor((y * ch) / th);
   const row = Buffer.alloc(tw * 4);
@@ -215,12 +226,15 @@ for (let y = 0; y < th; y++) {
     row[x * 4 + 2] = best[2];
     row[x * 4 + 3] = best[3];
   }
-  out.push(row);
+  scaled.push(row);
 }
 
+const outW = tw;
+const out = scaled;
+
 // Knock out isolated near-black (background), keep outline blacks near color
-for (let y = 0; y < th; y++) {
-  for (let x = 0; x < tw; x++) {
+for (let y = 0; y < outH; y++) {
+  for (let x = 0; x < outW; x++) {
     const p = pixel(out, y, x);
     if (!(p[3] > 0 && p[0] < 28 && p[1] < 28 && p[2] < 34)) continue;
     let keep = false;
@@ -228,7 +242,7 @@ for (let y = 0; y < th; y++) {
       for (let dx = -2; dx <= 2; dx++) {
         const ny = y + dy;
         const nx = x + dx;
-        if (ny < 0 || ny >= th || nx < 0 || nx >= tw) continue;
+        if (ny < 0 || ny >= outH || nx < 0 || nx >= outW) continue;
         if (isColorful(pixel(out, ny, nx))) {
           keep = true;
           break;
@@ -245,5 +259,5 @@ for (let y = 0; y < th; y++) {
 }
 
 mkdirSync(dirname(outPath), { recursive: true });
-writePng(outPath, tw, th, out);
-console.log(`eidrolon ${tw}x${th} from draft`);
+writePng(outPath, outW, outH, out);
+console.log(`eidrolon ${outW}x${outH} (content scaled ${tw}x${th}) from draft`);

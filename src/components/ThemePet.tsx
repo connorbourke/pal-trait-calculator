@@ -17,33 +17,63 @@ const PET_SRC: Record<ThemeId, string> = {
   sekhmet: "/pets/sekhmet.png",
 };
 
-const PET_SIZE_MOBILE = 96;
-const PET_SIZE_DESKTOP = 144;
+/**
+ * Native sprite layout (pixels in the PNG).
+ * Eidrolon bodyH = head-crown → feet (excludes horns above, wings, tail below).
+ * Sekhmet body fills the square canvas.
+ */
+const PET_LAYOUT = {
+  sekhmet: { nativeW: 96, nativeH: 96, bodyH: 96 },
+  eidrolon: { nativeW: 71, nativeH: 96, bodyH: 61 },
+} as const;
+
+/** Sekhmet is ~10% smaller than the reference pet size. */
+const SEKHMET_SCALE = 0.9;
+
+const PET_H_MOBILE = 96;
+const PET_H_DESKTOP = 144;
 const DESKTOP_MQ = "(min-width: 640px)";
 const MARGIN = 12;
 
-function petSize(): number {
-  if (typeof window === "undefined") return PET_SIZE_MOBILE;
+function referenceHeight(): number {
+  if (typeof window === "undefined") return PET_H_MOBILE;
   return window.matchMedia(DESKTOP_MQ).matches
-    ? PET_SIZE_DESKTOP
-    : PET_SIZE_MOBILE;
+    ? PET_H_DESKTOP
+    : PET_H_MOBILE;
 }
 
-function defaultPos(): PetPosition {
-  if (typeof window === "undefined") {
-    return { x: MARGIN, y: MARGIN };
+/**
+ * Sekhmet: 90% of reference, square.
+ * Eidrolon: scale so head→toe body height matches Sekhmet's height; wings/tail make the box taller & wider.
+ */
+function petBox(theme: ThemeId): { w: number; h: number } {
+  const sekhmetH = Math.round(referenceHeight() * SEKHMET_SCALE);
+  if (theme === "sekhmet") {
+    return { w: sekhmetH, h: sekhmetH };
   }
-  const size = petSize();
+  const { nativeW, nativeH, bodyH } = PET_LAYOUT.eidrolon;
+  const scale = sekhmetH / bodyH;
   return {
-    x: Math.max(MARGIN, window.innerWidth - size - MARGIN * 2),
-    y: Math.max(MARGIN, window.innerHeight - size - MARGIN * 2),
+    w: Math.round(nativeW * scale),
+    h: Math.round(nativeH * scale),
   };
 }
 
-function clampPos(pos: PetPosition): PetPosition {
-  const size = petSize();
-  const maxX = Math.max(MARGIN, window.innerWidth - size - MARGIN);
-  const maxY = Math.max(MARGIN, window.innerHeight - size - MARGIN);
+function defaultPos(theme: ThemeId): PetPosition {
+  if (typeof window === "undefined") {
+    return { x: MARGIN, y: MARGIN };
+  }
+  const { w, h } = petBox(theme);
+  return {
+    x: Math.max(MARGIN, window.innerWidth - w - MARGIN * 2),
+    y: Math.max(MARGIN, window.innerHeight - h - MARGIN * 2),
+  };
+}
+
+function clampPos(pos: PetPosition, theme: ThemeId): PetPosition {
+  const { w, h } = petBox(theme);
+  const maxX = Math.max(MARGIN, window.innerWidth - w - MARGIN);
+  const maxY = Math.max(MARGIN, window.innerHeight - h - MARGIN);
   return {
     x: Math.min(maxX, Math.max(MARGIN, pos.x)),
     y: Math.min(maxY, Math.max(MARGIN, pos.y)),
@@ -57,25 +87,28 @@ interface Props {
 export function ThemePet({ theme }: Props) {
   const [pos, setPos] = useState<PetPosition>(() => {
     const saved = loadPetPositions()[theme];
-    return saved ? clampPos(saved) : defaultPos();
+    return saved ? clampPos(saved, theme) : defaultPos(theme);
   });
   const [dragging, setDragging] = useState(false);
+  const [box, setBox] = useState(() => petBox(theme));
   const dragOffset = useRef({ x: 0, y: 0 });
   const posRef = useRef(pos);
   posRef.current = pos;
 
   useEffect(() => {
     const saved = loadPetPositions()[theme];
-    setPos(saved ? clampPos(saved) : defaultPos());
+    setBox(petBox(theme));
+    setPos(saved ? clampPos(saved, theme) : defaultPos(theme));
   }, [theme]);
 
   useEffect(() => {
     function onResize() {
-      setPos((prev) => clampPos(prev));
+      setBox(petBox(theme));
+      setPos((prev) => clampPos(prev, theme));
     }
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, []);
+  }, [theme]);
 
   const onPointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -94,13 +127,16 @@ export function ThemePet({ theme }: Props) {
     (event: ReactPointerEvent<HTMLDivElement>) => {
       if (!dragging) return;
       setPos(
-        clampPos({
-          x: event.clientX - dragOffset.current.x,
-          y: event.clientY - dragOffset.current.y,
-        }),
+        clampPos(
+          {
+            x: event.clientX - dragOffset.current.x,
+            y: event.clientY - dragOffset.current.y,
+          },
+          theme,
+        ),
       );
     },
-    [dragging],
+    [dragging, theme],
   );
 
   const endDrag = useCallback(
@@ -120,7 +156,11 @@ export function ThemePet({ theme }: Props) {
   return (
     <div
       className={`theme-pet${dragging ? " dragging" : ""}`}
-      style={{ transform: `translate3d(${pos.x}px, ${pos.y}px, 0)` }}
+      style={{
+        width: box.w,
+        height: box.h,
+        transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
+      }}
       aria-hidden="true"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
