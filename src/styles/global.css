@@ -533,10 +533,6 @@ a {
   background: var(--hover-fill);
 }
 
-.swap {
-  justify-self: start;
-}
-
 .path-submode {
   display: flex;
   flex-wrap: wrap;
@@ -965,6 +961,132 @@ a {
   color: var(--muted-strong);
 }
 
+.merge-tree-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.65rem;
+  align-items: center;
+}
+
+.merge-tree-card-actions .count {
+  margin: 0;
+}
+
+.save-plan-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.save-plan-tip {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: min(18rem, 80vw);
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel-solid);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-size: 0.86rem;
+  line-height: 1.35;
+  animation: save-plan-tip-in 180ms ease both;
+}
+
+.save-plan-tip::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 1.1rem;
+  width: 10px;
+  height: 10px;
+  border-left: 1px solid var(--line-strong);
+  border-top: 1px solid var(--line-strong);
+  background: var(--panel-solid);
+  transform: rotate(45deg);
+}
+
+@keyframes save-plan-tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.saved-plans-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.saved-plan-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.85rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--inset-soft);
+}
+
+.saved-plan-item.active {
+  border-color: var(--line-strong);
+  background: var(--owned);
+}
+
+.saved-plan-meta {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.saved-plan-meta strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.saved-plan-meta span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.saved-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.saved-plan-actions .ghost {
+  min-height: 2.1rem;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.saved-plan-view-head {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.saved-plan-view-head h2 {
+  margin: 0;
+}
+
+.saved-plan-view-head .quiet {
+  margin: 0;
+}
+
 .load-more {
   margin-top: 1rem;
   display: inline-flex;
@@ -1187,6 +1309,25 @@ a {
   margin-top: 0.85rem;
 }
 
+.path-step-check {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  margin-top: 0.95rem;
+  cursor: pointer;
+}
+
+.path-step-check input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.path-step-done .pair {
+  opacity: 0.55;
+}
+
 .browse-search {
   display: grid;
   gap: 0.35rem;
@@ -1352,6 +1493,10 @@ a {
   }
 
   .settings-drawer-panel {
+    animation: none;
+  }
+
+  .save-plan-tip {
     animation: none;
   }
 }

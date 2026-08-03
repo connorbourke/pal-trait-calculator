@@ -38,6 +38,16 @@ import {
   saveShowPet,
 } from "./lib/storage";
 import {
+  createSavedPathPlanId,
+  defaultPlanName,
+  deleteSavedPathPlan,
+  loadSavedPathPlans,
+  snapshotPathResult,
+  updateSavedPathProgress,
+  upsertSavedPathPlan,
+  type SavedPathPlan,
+} from "./lib/savedPaths";
+import {
   applyTheme,
   loadTheme,
   saveTheme,
@@ -79,6 +89,12 @@ export default function App() {
   const [pathExcludeTags, setPathExcludeTags] = useState<Pal[]>([]);
   const [pathIncludePicker, setPathIncludePicker] = useState<Pal | null>(null);
   const [pathExcludePicker, setPathExcludePicker] = useState<Pal | null>(null);
+  const [savedPlans, setSavedPlans] = useState<SavedPathPlan[]>(() =>
+    loadSavedPathPlans(),
+  );
+  const [activeSavedPlanId, setActiveSavedPlanId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     applyTheme(theme);
@@ -95,6 +111,7 @@ export default function App() {
         setHideWorldTreeBreedable(loadHideWorldTreeBreedable());
         setOwned(loadOwned());
         setShowPet(loadShowPet());
+        setSavedPlans(loadSavedPathPlans());
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -436,9 +453,89 @@ export default function App() {
     setPathExcludeTags((prev) => prev.filter((tag) => tag.index !== index));
   }
 
-  function swapParents() {
-    setParentA(parentB);
-    setParentB(parentA);
+  const activeSavedPlan = useMemo(
+    () => savedPlans.find((plan) => plan.id === activeSavedPlanId) ?? null,
+    [savedPlans, activeSavedPlanId],
+  );
+
+  function palByIndex(index: number | undefined): Pal | null {
+    if (index == null || !dataset) return null;
+    return dataset.pals[index] ?? null;
+  }
+
+  function savePathPlan(path: PathResult): boolean {
+    const suggested = defaultPlanName(path, pathPlannerMode, {
+      traitA: pathTraitA?.name,
+      traitB: pathTraitB?.name,
+      target: pathTarget?.name,
+      start: pathStart?.name,
+    });
+    const name = window.prompt("Name this breeding plan", suggested);
+    if (name == null) return false;
+    const trimmed = name.trim() || suggested;
+    const plan: SavedPathPlan = {
+      id: createSavedPathPlanId(),
+      name: trimmed,
+      savedAt: Date.now(),
+      plannerMode: pathPlannerMode,
+      pathTraitA: pathTraitA?.index,
+      pathTraitB: pathTraitB?.index,
+      pathTarget: pathTarget?.index,
+      pathStart: pathStart?.index,
+      waypoints: waypoints.map((w) => w.index),
+      includeTargetAsParent,
+      result: snapshotPathResult(path),
+      completedStepKeys: [],
+    };
+    const next = upsertSavedPathPlan(plan);
+    setSavedPlans(next);
+    return true;
+  }
+
+  function openSavedPlan(plan: SavedPathPlan) {
+    setMode("path");
+    setPathPlannerMode(plan.plannerMode);
+    setIncludeTargetAsParent(Boolean(plan.includeTargetAsParent));
+    setPathPairTags([]);
+    setPathExcludeTags([]);
+    setPathVisibleCount(MERGE_PAGE_SIZE);
+
+    if (plan.plannerMode === "chain") {
+      setPathStart(palByIndex(plan.pathStart));
+      setPathTarget(palByIndex(plan.pathTarget));
+      setWaypoints(
+        (plan.waypoints ?? [])
+          .map((index) => palByIndex(index))
+          .filter((pal): pal is Pal => pal != null),
+      );
+      setPathTraitA(null);
+      setPathTraitB(null);
+    } else {
+      setPathTraitA(palByIndex(plan.pathTraitA));
+      setPathTraitB(palByIndex(plan.pathTraitB));
+      setPathTarget(palByIndex(plan.pathTarget));
+      setPathStart(null);
+      setWaypoints([]);
+    }
+
+    setActiveSavedPlanId(plan.id);
+  }
+
+  function removeSavedPlan(id: string) {
+    const next = deleteSavedPathPlan(id);
+    setSavedPlans(next);
+    if (activeSavedPlanId === id) setActiveSavedPlanId(null);
+  }
+
+  function toggleSavedStep(stepKey: string, completed: boolean) {
+    if (!activeSavedPlanId) return;
+    const plan = savedPlans.find((p) => p.id === activeSavedPlanId);
+    if (!plan) return;
+    const keys = new Set(plan.completedStepKeys);
+    if (completed) keys.add(stepKey);
+    else keys.delete(stepKey);
+    const next = updateSavedPathProgress(activeSavedPlanId, [...keys]);
+    setSavedPlans(next);
   }
 
   return (
@@ -467,6 +564,10 @@ export default function App() {
         onThemeChange={updateTheme}
         showPet={showPet}
         onShowPetChange={updateShowPet}
+        savedPlans={savedPlans}
+        activeSavedPlanId={activeSavedPlanId}
+        onOpenSavedPlan={openSavedPlan}
+        onDeleteSavedPlan={removeSavedPlan}
       />
 
       <main className="calculator" aria-label="Breeding calculator">
@@ -556,9 +657,6 @@ export default function App() {
                     placeholder="Second parent (optional for scan)"
                   />
                 </div>
-                <button type="button" className="ghost swap" onClick={swapParents}>
-                  Swap parents
-                </button>
               </div>
             ) : null}
 
@@ -778,6 +876,10 @@ export default function App() {
                 onLoadMorePaths={() =>
                   setPathVisibleCount((n) => n + MERGE_PAGE_SIZE)
                 }
+                activeSavedPlan={activeSavedPlan}
+                onSavePath={savePathPlan}
+                onToggleSavedStep={toggleSavedStep}
+                onClearActiveSavedPlan={() => setActiveSavedPlanId(null)}
                 ownedResult={ownedResult}
                 browsePals={browsePals}
                 owned={ownedSet}

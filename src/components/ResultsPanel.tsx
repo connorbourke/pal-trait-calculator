@@ -1,7 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Mode, MutationPassive, Pal } from "../lib/types";
 import type { ParentPair } from "../lib/breeding";
 import type { OwnedBreedResult, PathResult, PathStep } from "../lib/path";
+import {
+  pathResultFromSnapshot,
+  pathStepKey,
+  type SavedPathPlan,
+} from "../lib/savedPaths";
 import { formatWork } from "../lib/breeding";
 import { PalPortrait } from "./PalPortrait";
 import { PalSelect } from "./PalSelect";
@@ -38,6 +43,10 @@ interface Props {
   onAddPathExcludeTag: (pal: Pal) => void;
   onRemovePathExcludeTag: (index: number) => void;
   onLoadMorePaths: () => void;
+  activeSavedPlan: SavedPathPlan | null;
+  onSavePath: (path: PathResult) => boolean;
+  onToggleSavedStep: (stepKey: string, completed: boolean) => void;
+  onClearActiveSavedPlan: () => void;
   ownedResult: OwnedBreedResult | null;
   browsePals: Pal[];
   owned: Set<number>;
@@ -282,7 +291,21 @@ function PathResults({
   onAddPathExcludeTag,
   onRemovePathExcludeTag,
   onLoadMorePaths,
+  activeSavedPlan,
+  onSavePath,
+  onToggleSavedStep,
+  onClearActiveSavedPlan,
 }: Props) {
+  if (activeSavedPlan) {
+    return (
+      <SavedPlanResults
+        plan={activeSavedPlan}
+        onToggleSavedStep={onToggleSavedStep}
+        onClearActiveSavedPlan={onClearActiveSavedPlan}
+      />
+    );
+  }
+
   const ready =
     pathPlannerMode === "chain"
       ? Boolean(pathStart && pathTarget)
@@ -325,6 +348,7 @@ function PathResults({
         mergeTotalCount={mergeTotalCount}
         mergeAllCount={mergeAllCount}
         onLoadMorePaths={onLoadMorePaths}
+        onSavePath={onSavePath}
         {...tagProps}
       />
     );
@@ -339,6 +363,7 @@ function PathResults({
       chainTotalCount={chainTotalCount}
       chainAllCount={chainAllCount}
       onLoadMorePaths={onLoadMorePaths}
+      onSavePath={onSavePath}
       {...tagProps}
     />
   );
@@ -462,6 +487,7 @@ function ChainPathResults({
   chainTotalCount,
   chainAllCount,
   onLoadMorePaths,
+  onSavePath,
   ...tagProps
 }: {
   pathStart: Pal | null;
@@ -471,6 +497,7 @@ function ChainPathResults({
   chainTotalCount: number;
   chainAllCount: number;
   onLoadMorePaths: () => void;
+  onSavePath: (path: PathResult) => boolean;
 } & PathTagFilterProps) {
   if (
     pathStart &&
@@ -546,6 +573,7 @@ function ChainPathResults({
                 key={chainRouteKey(path, index)}
                 path={path}
                 index={index}
+                onSavePath={onSavePath}
               />
             ))}
           </div>
@@ -573,6 +601,7 @@ function MergePathResults({
   mergeTotalCount,
   mergeAllCount,
   onLoadMorePaths,
+  onSavePath,
   ...tagProps
 }: {
   pathTraitA: Pal | null;
@@ -582,6 +611,7 @@ function MergePathResults({
   mergeTotalCount: number;
   mergeAllCount: number;
   onLoadMorePaths: () => void;
+  onSavePath: (path: PathResult) => boolean;
 } & PathTagFilterProps) {
   if (
     pathTraitA &&
@@ -657,6 +687,7 @@ function MergePathResults({
                 key={mergeTreeKey(path, index)}
                 path={path}
                 index={index}
+                onSavePath={onSavePath}
               />
             ))}
           </div>
@@ -683,14 +714,27 @@ function chainRouteKey(path: PathResult, index: number): string {
   return `${body || "empty"}-${index}`;
 }
 
-function ChainRouteCard({ path, index }: { path: PathResult; index: number }) {
+function ChainRouteCard({
+  path,
+  index,
+  onSavePath,
+}: {
+  path: PathResult;
+  index: number;
+  onSavePath: (path: PathResult) => boolean;
+}) {
   return (
     <article className="merge-tree-card">
       <div className="merge-tree-card-head">
         <h3>Route {index + 1}</h3>
-        <p className="count">
-          {path.totalBreeds} breed{path.totalBreeds === 1 ? "" : "s"}
-        </p>
+        <div className="merge-tree-card-actions">
+          <p className="count">
+            {path.totalBreeds} breed{path.totalBreeds === 1 ? "" : "s"}
+          </p>
+          {path.steps.length > 0 ? (
+            <SavePlanButton path={path} onSavePath={onSavePath} />
+          ) : null}
+        </div>
       </div>
       {path.summary ? <p className="hint-inline">{path.summary}</p> : null}
       {path.steps.length === 0 ? (
@@ -709,7 +753,15 @@ function mergeTreeKey(path: PathResult, index: number): string {
   return `merge-${index}`;
 }
 
-function MergeTreeCard({ path, index }: { path: PathResult; index: number }) {
+function MergeTreeCard({
+  path,
+  index,
+  onSavePath,
+}: {
+  path: PathResult;
+  index: number;
+  onSavePath: (path: PathResult) => boolean;
+}) {
   const branchA = path.steps.filter((s) => s.role === "branch-a");
   const branchB = path.steps.filter((s) => s.role === "branch-b");
   const mergeSteps = path.steps.filter((s) => s.role === "merge");
@@ -728,9 +780,14 @@ function MergeTreeCard({ path, index }: { path: PathResult; index: number }) {
             </span>
           ) : null}
         </h3>
-        <p className="count">
-          {path.totalBreeds} breed{path.totalBreeds === 1 ? "" : "s"}
-        </p>
+        <div className="merge-tree-card-actions">
+          <p className="count">
+            {path.totalBreeds} breed{path.totalBreeds === 1 ? "" : "s"}
+          </p>
+          {path.steps.length > 0 ? (
+            <SavePlanButton path={path} onSavePath={onSavePath} />
+          ) : null}
+        </div>
       </div>
 
       {path.steps.length === 0 ? (
@@ -747,27 +804,168 @@ function MergeTreeCard({ path, index }: { path: PathResult; index: number }) {
   );
 }
 
-function PathSection({ title, steps }: { title: string; steps: PathStep[] }) {
+function SavePlanButton({
+  path,
+  onSavePath,
+}: {
+  path: PathResult;
+  onSavePath: (path: PathResult) => boolean;
+}) {
+  const [tip, setTip] = useState(false);
+
+  useEffect(() => {
+    if (!tip) return;
+    const timer = window.setTimeout(() => setTip(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [tip]);
+
+  return (
+    <div className="save-plan-control">
+      <button
+        type="button"
+        className="ghost"
+        onClick={() => {
+          if (onSavePath(path)) setTip(true);
+        }}
+      >
+        Save this plan
+      </button>
+      {tip ? (
+        <div className="save-plan-tip" role="status">
+          Saved — find it anytime in Settings (gear icon)
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SavedPlanResults({
+  plan,
+  onToggleSavedStep,
+  onClearActiveSavedPlan,
+}: {
+  plan: SavedPathPlan;
+  onToggleSavedStep: (stepKey: string, completed: boolean) => void;
+  onClearActiveSavedPlan: () => void;
+}) {
+  const path = pathResultFromSnapshot(plan.result);
+  const completed = new Set(plan.completedStepKeys);
+  const total = path.steps.length;
+  const done = path.steps.filter((step) => completed.has(pathStepKey(step))).length;
+
+  const branchA = path.steps.filter((s) => s.role === "branch-a");
+  const branchB = path.steps.filter((s) => s.role === "branch-b");
+  const mergeSteps = path.steps.filter((s) => s.role === "merge");
+  const finishSteps = path.steps.filter((s) => s.role === "finish");
+  const trackProgress = {
+    completedKeys: completed,
+    onToggle: onToggleSavedStep,
+  };
+
+  return (
+    <section className="results">
+      <div className="results-head">
+        <div className="saved-plan-view-head">
+          <h2>{plan.name}</h2>
+          <p className="quiet">
+            Saved {plan.plannerMode === "merge" ? "merge tree" : "route"} ·{" "}
+            {done}/{total} steps done
+          </p>
+        </div>
+        <button type="button" className="ghost" onClick={onClearActiveSavedPlan}>
+          Back to search results
+        </button>
+      </div>
+
+      <article className="merge-tree-card saved-plan-card">
+        {path.summary ? <p className="hint-inline">{path.summary}</p> : null}
+        {path.steps.length === 0 ? (
+          <p className="quiet">Already at the target — no breeds needed.</p>
+        ) : plan.plannerMode === "merge" ? (
+          <div className="tree-sections">
+            <PathSection
+              title="Branch A — from trait parent A"
+              steps={branchA}
+              progress={trackProgress}
+            />
+            <PathSection
+              title="Branch B — from trait parent B"
+              steps={branchB}
+              progress={trackProgress}
+            />
+            <PathSection
+              title="Merge — combine the two branches"
+              steps={mergeSteps}
+              progress={trackProgress}
+            />
+            <PathSection
+              title="Finish — to target"
+              steps={finishSteps}
+              progress={trackProgress}
+            />
+          </div>
+        ) : (
+          <PathSection
+            title="Breeding steps"
+            steps={path.steps}
+            progress={trackProgress}
+          />
+        )}
+      </article>
+    </section>
+  );
+}
+
+function PathSection({
+  title,
+  steps,
+  progress,
+}: {
+  title: string;
+  steps: PathStep[];
+  progress?: {
+    completedKeys: Set<string>;
+    onToggle: (stepKey: string, completed: boolean) => void;
+  };
+}) {
   if (steps.length === 0) return null;
   return (
     <div className="wave">
       <h3>{title}</h3>
       <ol className="path-list">
-        {steps.map((step, index) => (
-          <li key={`${step.role}-${step.from.index}-${step.partner.index}-${step.child.index}-${index}`}>
-            <span className="step-num">{index + 1}</span>
-            <div className={`pair${step.role === "merge" ? " pair-owned" : ""}`}>
-              <PalPortrait pal={step.from} size="md" layout="row" />
-              <span className="plus">+</span>
-              <PalPortrait pal={step.partner} size="md" layout="row" />
-              <span className="plus">→</span>
-              <PalPortrait pal={step.child} size="md" layout="row" />
-              {step.role === "merge" ? (
-                <span className="badge owned-badge">Merge</span>
-              ) : null}
-            </div>
-          </li>
-        ))}
+        {steps.map((step, index) => {
+          const key = pathStepKey(step);
+          const done = progress?.completedKeys.has(key) ?? false;
+          return (
+            <li
+              key={`${key}-${index}`}
+              className={done ? "path-step-done" : undefined}
+            >
+              {progress ? (
+                <label className="path-step-check">
+                  <input
+                    type="checkbox"
+                    checked={done}
+                    onChange={(e) => progress.onToggle(key, e.target.checked)}
+                    aria-label={`Mark step ${index + 1} complete`}
+                  />
+                </label>
+              ) : (
+                <span className="step-num">{index + 1}</span>
+              )}
+              <div className={`pair${step.role === "merge" ? " pair-owned" : ""}`}>
+                <PalPortrait pal={step.from} size="md" layout="row" />
+                <span className="plus">+</span>
+                <PalPortrait pal={step.partner} size="md" layout="row" />
+                <span className="plus">→</span>
+                <PalPortrait pal={step.child} size="md" layout="row" />
+                {step.role === "merge" ? (
+                  <span className="badge owned-badge">Merge</span>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );

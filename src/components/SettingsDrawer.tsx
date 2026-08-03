@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from "react";
 import { ThemeToggle } from "./ThemeToggle";
+import { pathStepKey, type SavedPathPlan } from "../lib/savedPaths";
 import type { ThemeId } from "../lib/theme";
 
 interface Props {
@@ -9,6 +10,10 @@ interface Props {
   onThemeChange: (theme: ThemeId) => void;
   showPet: boolean;
   onShowPetChange: (show: boolean) => void;
+  savedPlans: SavedPathPlan[];
+  activeSavedPlanId: string | null;
+  onOpenSavedPlan: (plan: SavedPathPlan) => void;
+  onDeleteSavedPlan: (id: string) => void;
 }
 
 export function SettingsDrawer({
@@ -18,6 +23,10 @@ export function SettingsDrawer({
   onThemeChange,
   showPet,
   onShowPetChange,
+  savedPlans,
+  activeSavedPlanId,
+  onOpenSavedPlan,
+  onDeleteSavedPlan,
 }: Props) {
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -100,6 +109,63 @@ export function SettingsDrawer({
             <p className="settings-hint">
               Decorative sprite in the corner. Handy to hide on small screens.
             </p>
+          </section>
+
+          <section className="settings-section" aria-labelledby="settings-plans">
+            <h3 id="settings-plans" className="settings-section-title">
+              Saved plans
+            </h3>
+            {savedPlans.length === 0 ? (
+              <p className="settings-hint">
+                Save a Trait Path tree or route from the results, then reopen it
+                here later.
+              </p>
+            ) : (
+              <ul className="saved-plans-list">
+                {savedPlans.map((plan) => {
+                  const total = plan.result.steps.length;
+                  const done = plan.completedStepKeys.filter((key) =>
+                    plan.result.steps.some((step) => pathStepKey(step) === key),
+                  ).length;
+                  const active = plan.id === activeSavedPlanId;
+                  return (
+                    <li
+                      key={plan.id}
+                      className={
+                        active ? "saved-plan-item active" : "saved-plan-item"
+                      }
+                    >
+                      <div className="saved-plan-meta">
+                        <strong>{plan.name}</strong>
+                        <span>
+                          {plan.plannerMode === "merge" ? "Merge" : "Route"} ·{" "}
+                          {done}/{total} steps
+                        </span>
+                      </div>
+                      <div className="saved-plan-actions">
+                        <button
+                          type="button"
+                          className="ghost"
+                          onClick={() => {
+                            onOpenSavedPlan(plan);
+                            onClose();
+                          }}
+                        >
+                          {active ? "Viewing" : "Open"}
+                        </button>
+                        <button
+                          type="button"
+                          className="ghost"
+                          onClick={() => onDeleteSavedPlan(plan.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </section>
         </div>
       </div>
