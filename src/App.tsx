@@ -56,6 +56,11 @@ import {
   sharePayloadFromPlanner,
   treeForShare,
 } from "./lib/share";
+import {
+  parseComboFromLocation,
+  encodeComboPayload,
+  type ComboPayloadV1,
+} from "./lib/cannedLinks";
 import type { SpecimenV1 } from "./lib/specimens";
 import {
   applyTheme,
@@ -110,6 +115,7 @@ export default function App() {
   /** Shared/imported plan preview before (or instead of) local save. */
   const [sessionPlan, setSessionPlan] = useState<SavedPathPlan | null>(null);
   const lastShareKeyRef = useRef<string | null>(null);
+  const lastComboKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     applyTheme(theme);
@@ -143,67 +149,168 @@ export default function App() {
     if (!dataset) return;
 
     const applyShareFromLocation = () => {
-      const payload = parseShareFromLocation(
+      const sharePayload = parseShareFromLocation(
         window.location.search,
         window.location.hash,
       );
-      if (!payload) return;
 
-      const shareKey = encodeSharePayload(payload);
-      if (lastShareKeyRef.current === shareKey) return;
-      lastShareKeyRef.current = shareKey;
+      if (sharePayload) {
+        const shareKey = encodeSharePayload(sharePayload);
+        if (lastShareKeyRef.current === shareKey) return;
+        lastShareKeyRef.current = shareKey;
+        lastComboKeyRef.current = null;
 
-      const resolved = resolveSharePayload(dataset, payload);
-      setMode("path");
-      setPathPlannerMode(resolved.mode);
-      setIncludeTargetAsParent(resolved.includeTargetAsParent);
-      setActiveSavedPlanId(null);
-      setPathPairTags([]);
-      setPathExcludeTags([]);
-      setPathVisibleCount(MERGE_PAGE_SIZE);
-      setSpecimens(resolved.specimens);
+        const resolved = resolveSharePayload(dataset, sharePayload);
+        setMode("path");
+        setPathPlannerMode(resolved.mode);
+        setIncludeTargetAsParent(resolved.includeTargetAsParent);
+        setActiveSavedPlanId(null);
+        setPathPairTags([]);
+        setPathExcludeTags([]);
+        setPathVisibleCount(MERGE_PAGE_SIZE);
+        setSpecimens(resolved.specimens);
 
-      if (resolved.mode === "merge") {
-        setPathTraitA(resolved.traitA);
-        setPathTraitB(resolved.traitB);
-        setPathTarget(resolved.target);
-        setPathStart(null);
-        setWaypoints([]);
-      } else {
-        setPathStart(resolved.start);
-        setPathTarget(resolved.target);
-        setWaypoints(resolved.waypoints);
-        setPathTraitA(null);
-        setPathTraitB(null);
-      }
+        if (resolved.mode === "merge") {
+          setPathTraitA(resolved.traitA);
+          setPathTraitB(resolved.traitB);
+          setPathTarget(resolved.target);
+          setPathStart(null);
+          setWaypoints([]);
+        } else {
+          setPathStart(resolved.start);
+          setPathTarget(resolved.target);
+          setWaypoints(resolved.waypoints);
+          setPathTraitA(null);
+          setPathTraitB(null);
+        }
 
-      if (resolved.importedPlan) {
-        setSessionPlan(resolved.importedPlan);
-        setShareBanner(
-          resolved.unresolved.length
-            ? `Opened shared tree — could not resolve: ${resolved.unresolved.join(", ")}`
-            : `Opened shared breeding tree${resolved.specimens.length ? ` with ${resolved.specimens.length} injected pal${resolved.specimens.length === 1 ? "" : "s"}` : ""}. Save it anytime.`,
-        );
-      } else {
-        setSessionPlan(null);
-        if (resolved.unresolved.length) {
+        if (resolved.importedPlan) {
+          setSessionPlan(resolved.importedPlan);
           setShareBanner(
-            `Opened shared plan — could not resolve: ${resolved.unresolved.join(", ")}`,
-          );
-        } else if (resolved.specimens.length) {
-          setShareBanner(
-            `Opened shared plan with ${resolved.specimens.length} injected pal${resolved.specimens.length === 1 ? "" : "s"}.`,
+            resolved.unresolved.length
+              ? `Opened shared tree — could not resolve: ${resolved.unresolved.join(", ")}`
+              : `Opened shared breeding tree${resolved.specimens.length ? ` with ${resolved.specimens.length} injected pal${resolved.specimens.length === 1 ? "" : "s"}` : ""}. Save it anytime.`,
           );
         } else {
-          setShareBanner("Opened shared breeding plan from link.");
+          setSessionPlan(null);
+          if (resolved.unresolved.length) {
+            setShareBanner(
+              `Opened shared plan — could not resolve: ${resolved.unresolved.join(", ")}`,
+            );
+          } else if (resolved.specimens.length) {
+            setShareBanner(
+              `Opened shared plan with ${resolved.specimens.length} injected pal${resolved.specimens.length === 1 ? "" : "s"}.`,
+            );
+          } else {
+            setShareBanner("Opened shared breeding plan from link.");
+          }
         }
+        return;
       }
+
+      const comboPayload: ComboPayloadV1 | null = parseComboFromLocation(
+        window.location.hash,
+      );
+      if (!comboPayload) return;
+
+      const comboKey = encodeComboPayload(comboPayload);
+      if (lastComboKeyRef.current === comboKey) return;
+      lastComboKeyRef.current = comboKey;
+      lastShareKeyRef.current = null;
+
+      const openError = (msg: string) => {
+        setShareBanner(msg);
+        setSessionPlan(null);
+        setActiveSavedPlanId(null);
+      };
+
+      if (comboPayload.mode === "child") {
+        const aPal = resolvePalName(dataset, comboPayload.a);
+        const bPal = resolvePalName(dataset, comboPayload.b);
+        if (!aPal || !bPal) {
+          openError(
+            `Opened offspring link — could not resolve: ${[
+              !aPal ? `a: ${comboPayload.a}` : null,
+              !bPal ? `b: ${comboPayload.b}` : null,
+            ]
+              .filter(Boolean)
+              .join(", ")}`,
+          );
+          return;
+        }
+
+        setMode("child");
+        setParentA(aPal);
+        setParentB(bPal);
+        setTarget(null);
+        setActiveSavedPlanId(null);
+        setSessionPlan(null);
+        setShareBanner("Opened offspring from link.");
+        return;
+      }
+
+      // parents
+      const tPal = resolvePalName(dataset, comboPayload.t);
+      if (!tPal) {
+        openError(`Opened parent pairs link — could not resolve: ${comboPayload.t}`);
+        return;
+      }
+
+      setMode("parents");
+      setTarget(tPal);
+      setParentA(null);
+      setParentB(null);
+      setActiveSavedPlanId(null);
+      setSessionPlan(null);
+      setShareBanner("Opened parent pairs from link.");
     };
 
     applyShareFromLocation();
     window.addEventListener("hashchange", applyShareFromLocation);
     return () => window.removeEventListener("hashchange", applyShareFromLocation);
   }, [dataset]);
+
+  // Keep the URL hash in sync with the active Parents/Offspring selection
+  // so players can share a link just by copying the browser address.
+  useEffect(() => {
+    if (!dataset) return;
+
+    const currentHash = window.location.hash || "";
+
+    const setComboHash = (payload: ComboPayloadV1) => {
+      const comboKey = encodeComboPayload(payload);
+      const nextHash = `#combo=${comboKey}`;
+      if (currentHash === nextHash) return;
+
+      // Prevent the hashchange handler from re-applying the same combo.
+      lastComboKeyRef.current = comboKey;
+      lastShareKeyRef.current = null;
+      window.location.hash = nextHash;
+    };
+
+    if (mode === "parents" && target) {
+      setComboHash({ v: 1, mode: "parents", t: target.name });
+      return;
+    }
+
+    if (mode === "child" && parentA && parentB) {
+      setComboHash({ v: 1, mode: "child", a: parentA.name, b: parentB.name });
+      return;
+    }
+
+    // If the user leaves the parent/child lookup views (or has an incomplete
+    // selection), clear our canned link fragment.
+    if (currentHash.startsWith("#combo=")) {
+      const hasValidSelection =
+        (mode === "parents" && Boolean(target)) ||
+        (mode === "child" && Boolean(parentA && parentB));
+
+      if (!hasValidSelection) {
+        lastComboKeyRef.current = null;
+        window.location.hash = "";
+      }
+    }
+  }, [dataset, mode, target, parentA, parentB]);
 
   function updateTheme(next: ThemeId) {
     setTheme(next);
@@ -1056,8 +1163,6 @@ export default function App() {
                 ownedResult={ownedResult}
                 browsePals={browsePals}
                 owned={ownedSet}
-                mutationPassives={dataset.mutationPassives}
-                mutationNote={dataset.meta.features.mutationSpeciesNote}
                 onToggleOwned={toggleOwned}
               />
             )}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Mode, MutationPassive, Pal } from "../lib/types";
+import type { Mode, Pal } from "../lib/types";
 import type { ParentPair } from "../lib/breeding";
 import type { OwnedBreedResult, PathResult, PathStep } from "../lib/path";
 import {
@@ -15,6 +15,7 @@ import {
 } from "../lib/specimens";
 import type { ShareTreePal, ShareTreeV1 } from "../lib/shareTree";
 import { formatWork } from "../lib/breeding";
+import { buildComboHash, buildComboUrl } from "../lib/cannedLinks";
 import { PalPortrait } from "./PalPortrait";
 import { PalSelect } from "./PalSelect";
 import { SpecimenInlineNotes, SpecimenStrip } from "./SpecimenStrip";
@@ -64,8 +65,6 @@ interface Props {
   ownedResult: OwnedBreedResult | null;
   browsePals: Pal[];
   owned: Set<number>;
-  mutationPassives: MutationPassive[];
-  mutationNote: string;
   onToggleOwned: (index: number) => void;
 }
 
@@ -110,6 +109,7 @@ function palsMatchQuery(
 
 function ParentsResults({ target, pairs, owned }: Props) {
   const [resultsQuery, setResultsQuery] = useState("");
+  const [copiedForHash, setCopiedForHash] = useState<string | null>(null);
 
   const filteredPairs = useMemo(
     () => pairs.filter((pair) => pairMatchesQuery(pair, resultsQuery)),
@@ -182,6 +182,18 @@ function ParentsResults({ target, pairs, owned }: Props) {
           {filteredPairs.map((pair) => {
             const bothOwned =
               owned.has(pair.parentA.index) && owned.has(pair.parentB.index);
+            const childHash = buildComboHash({
+              v: 1,
+              mode: "child",
+              a: pair.parentA.name,
+              b: pair.parentB.name,
+            });
+            const childUrl = buildComboUrl({
+              v: 1,
+              mode: "child",
+              a: pair.parentA.name,
+              b: pair.parentB.name,
+            });
             return (
               <li key={pair.comboIndex}>
                 <div className={`pair${bothOwned ? " pair-owned" : ""}`}>
@@ -210,6 +222,36 @@ function ParentsResults({ target, pairs, owned }: Props) {
                 {pair.genderNote ? (
                   <p className="gender-note">{pair.genderNote}</p>
                 ) : null}
+                <div className="save-plan-control">
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={() => {
+                      window.location.hash = childHash;
+                    }}
+                    aria-label={`Open offspring for ${pair.parentA.name} + ${pair.parentB.name}`}
+                  >
+                    Offspring link
+                  </button>
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(childUrl);
+                        setCopiedForHash(childHash);
+                        window.setTimeout(() => {
+                          setCopiedForHash((prev) => (prev === childHash ? null : prev));
+                        }, 2500);
+                      } catch {
+                        // Clipboard may be blocked; no hard failure required.
+                      }
+                    }}
+                    aria-label={`Copy offspring link for ${pair.parentA.name} + ${pair.parentB.name}`}
+                  >
+                    {copiedForHash === childHash ? "Copied" : "Copy link"}
+                  </button>
+                </div>
               </li>
             );
           })}
@@ -223,9 +265,9 @@ function ChildResults({
   parentA,
   parentB,
   child,
-  mutationPassives,
-  mutationNote,
 }: Props) {
+  const [copiedForHash, setCopiedForHash] = useState<string | null>(null);
+
   if (!parentA || !parentB) {
     return (
       <section className="results">
@@ -259,23 +301,56 @@ function ChildResults({
           <PalPortrait pal={child} size="lg" layout="row" />
         </div>
       </article>
-
-      <article className="mutation-card">
-        <h3>Mutation overlay</h3>
-        <p>{mutationNote}</p>
-        <p className="quiet">
-          If this egg mutates, the species stays <strong>{child.name}</strong>.
-          Mutated hatchlings can roll these unique passives:
-        </p>
-        <ul className="mutation-list">
-          {mutationPassives.map((passive) => (
-            <li key={passive.internalName}>
-              <strong>{passive.name}</strong>
-              <span>{passive.description}</span>
-            </li>
-          ))}
-        </ul>
-      </article>
+      {child ? (
+        <div className="save-plan-control" style={{ marginTop: "0.75rem" }}>
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => {
+              const parentsHash = buildComboHash({
+                v: 1,
+                mode: "parents",
+                t: child.name,
+              });
+              window.location.hash = parentsHash;
+            }}
+          >
+            Parent pairs link
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            onClick={async () => {
+              try {
+                const parentsUrl = buildComboUrl({
+                  v: 1,
+                  mode: "parents",
+                  t: child.name,
+                });
+                await navigator.clipboard.writeText(parentsUrl);
+                const parentsHash = buildComboHash({
+                  v: 1,
+                  mode: "parents",
+                  t: child.name,
+                });
+                setCopiedForHash(parentsHash);
+                window.setTimeout(() => {
+                  setCopiedForHash((prev) =>
+                    prev === parentsHash ? null : prev,
+                  );
+                }, 2500);
+              } catch {
+                // Clipboard may be blocked; no hard failure required.
+              }
+            }}
+          >
+            {copiedForHash ===
+            buildComboHash({ v: 1, mode: "parents", t: child.name })
+              ? "Copied"
+              : "Copy link"}
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

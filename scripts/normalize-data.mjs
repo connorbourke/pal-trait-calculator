@@ -264,8 +264,6 @@ function main() {
         "palcalc v1.18.3 shipped 2026-07-31, one day after Steam 1.0.2 hotfixes. No separate public 1.0.2-only dump was found; this is the newest dump available.",
     },
     features: {
-      mutationSpeciesNote:
-        "Official 1.0 notes: Mutation does not change child species. It can add Mutation passives and stronger stats. This app shows that overlay; it does not invent alternate mutation species tables.",
       worldTreeNote:
         "World Tree exclusives require catching inside the World Tree (self-breed only). World Tree breedables wild-spawn there but can be bred from non–World Tree parents.",
     },

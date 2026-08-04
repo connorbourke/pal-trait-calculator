@@ -66,7 +66,6 @@ export interface DatasetMeta {
   comboCount: number;
   trending: number[];
   features: {
-    mutationSpeciesNote: string;
     worldTreeNote?: string;
   };
   gameTarget: {
