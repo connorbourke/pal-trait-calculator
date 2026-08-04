@@ -61,6 +61,14 @@ import {
   encodeComboPayload,
   type ComboPayloadV1,
 } from "./lib/cannedLinks";
+import {
+  discoverWorldsFromDirectoryHandle,
+  discoverWorldsFromFileList,
+  importOwnedFromLevelSav,
+  pickSaveGamesDirectory,
+  supportsSaveGamesFolderPicker,
+  type SaveWorldCandidate,
+} from "./lib/saveImport";
 import type { SpecimenV1 } from "./lib/specimens";
 import {
   applyTheme,
@@ -114,6 +122,13 @@ export default function App() {
   const [shareBanner, setShareBanner] = useState<string | null>(null);
   /** Shared/imported plan preview before (or instead of) local save. */
   const [sessionPlan, setSessionPlan] = useState<SavedPathPlan | null>(null);
+  const [browseImportStatus, setBrowseImportStatus] = useState<string | null>(
+    null,
+  );
+  const [browseImportBusy, setBrowseImportBusy] = useState(false);
+  const [browseWorldChoices, setBrowseWorldChoices] = useState<
+    SaveWorldCandidate[] | null
+  >(null);
   const lastShareKeyRef = useRef<string | null>(null);
   const lastComboKeyRef = useRef<string | null>(null);
 
@@ -602,6 +617,93 @@ export default function App() {
       saveOwned(next);
       return next;
     });
+  }
+
+  function clearOwned() {
+    setOwned([]);
+    saveOwned([]);
+    setBrowseWorldChoices(null);
+    setBrowseImportStatus("Cleared owned set.");
+  }
+
+  async function applyOwnedImport(file: File, sourceLabel: string) {
+    if (!dataset) return;
+    setBrowseImportBusy(true);
+    setBrowseImportStatus(`Reading ${sourceLabel}…`);
+    try {
+      const result = await importOwnedFromLevelSav(dataset, file);
+      setOwned(result.indexes);
+      saveOwned(result.indexes);
+      setBrowseWorldChoices(null);
+      const unresolvedNote =
+        result.unresolved.length > 0
+          ? ` · ${result.unresolved.length} id${result.unresolved.length === 1 ? "" : "s"} unmatched`
+          : "";
+      setBrowseImportStatus(
+        `Imported ${result.speciesCount} species from ${result.palCount} Pal${result.palCount === 1 ? "" : "s"} (${sourceLabel})${unresolvedNote}. Owned set replaced.`,
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not import Level.sav";
+      setBrowseImportStatus(`Import failed — owned set unchanged. ${message}`);
+    } finally {
+      setBrowseImportBusy(false);
+    }
+  }
+
+  async function importOwnedFromSave(file: File) {
+    await applyOwnedImport(file, file.name);
+  }
+
+  function presentWorldChoices(worlds: SaveWorldCandidate[]): Promise<void> | void {
+    if (worlds.length === 0) {
+      setBrowseWorldChoices(null);
+      setBrowseImportStatus(
+        "Import failed — owned set unchanged. No Level.sav found. Choose the SaveGames folder (or a world folder that contains Level.sav).",
+      );
+      return;
+    }
+    if (worlds.length === 1) {
+      const only = worlds[0]!;
+      return applyOwnedImport(only.file, only.relativePath);
+    }
+    setBrowseWorldChoices(worlds);
+    setBrowseImportStatus(
+      `Found ${worlds.length} worlds — pick one to import (owned set unchanged until you choose).`,
+    );
+  }
+
+  async function importOwnedFromSaveGamesFolder() {
+    setBrowseImportBusy(true);
+    setBrowseImportStatus("Opening SaveGames folder…");
+    try {
+      const handle = await pickSaveGamesDirectory();
+      setBrowseImportStatus(`Scanning ${handle.name}…`);
+      const worlds = await discoverWorldsFromDirectoryHandle(handle);
+      // Clear scan busy before import/picker; applyOwnedImport manages its own busy flag.
+      setBrowseImportBusy(false);
+      await presentWorldChoices(worlds);
+    } catch (err) {
+      const name = err instanceof Error ? err.name : "";
+      if (name === "AbortError") {
+        setBrowseImportStatus(null);
+      } else {
+        const message =
+          err instanceof Error ? err.message : "Could not open SaveGames folder";
+        setBrowseImportStatus(
+          `Import failed — owned set unchanged. ${message}`,
+        );
+      }
+      setBrowseImportBusy(false);
+    }
+  }
+
+  function importOwnedFromSaveGamesFileList(files: FileList) {
+    void presentWorldChoices(discoverWorldsFromFileList(files));
+  }
+
+  function chooseBrowseWorld(world: SaveWorldCandidate) {
+    void applyOwnedImport(world.file, world.relativePath);
   }
 
   function addWaypoint(pal: Pal) {
@@ -1164,6 +1266,20 @@ export default function App() {
                 browsePals={browsePals}
                 owned={ownedSet}
                 onToggleOwned={toggleOwned}
+                onClearOwned={clearOwned}
+                onImportOwnedFromSave={importOwnedFromSave}
+                onImportOwnedFromSaveGamesFolder={
+                  supportsSaveGamesFolderPicker()
+                    ? importOwnedFromSaveGamesFolder
+                    : undefined
+                }
+                onImportOwnedFromSaveGamesFiles={importOwnedFromSaveGamesFileList}
+                browseWorldChoices={browseWorldChoices}
+                onChooseBrowseWorld={chooseBrowseWorld}
+                onDismissBrowseWorldChoices={() => setBrowseWorldChoices(null)}
+                browseImportStatus={browseImportStatus}
+                browseImportBusy={browseImportBusy}
+                onDismissBrowseImportStatus={() => setBrowseImportStatus(null)}
               />
             )}
           </>

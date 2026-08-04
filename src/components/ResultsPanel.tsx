@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Mode, Pal } from "../lib/types";
 import type { ParentPair } from "../lib/breeding";
 import type { OwnedBreedResult, PathResult, PathStep } from "../lib/path";
@@ -16,6 +16,7 @@ import {
 import type { ShareTreePal, ShareTreeV1 } from "../lib/shareTree";
 import { formatWork } from "../lib/breeding";
 import { buildComboHash, buildComboUrl } from "../lib/cannedLinks";
+import type { SaveWorldCandidate } from "../lib/saveImport";
 import { PalPortrait } from "./PalPortrait";
 import { PalSelect } from "./PalSelect";
 import { SpecimenInlineNotes, SpecimenStrip } from "./SpecimenStrip";
@@ -66,6 +67,16 @@ interface Props {
   browsePals: Pal[];
   owned: Set<number>;
   onToggleOwned: (index: number) => void;
+  onClearOwned?: () => void;
+  onImportOwnedFromSave?: (file: File) => Promise<void> | void;
+  onImportOwnedFromSaveGamesFolder?: () => Promise<void> | void;
+  onImportOwnedFromSaveGamesFiles?: (files: FileList) => void;
+  browseWorldChoices?: SaveWorldCandidate[] | null;
+  onChooseBrowseWorld?: (world: SaveWorldCandidate) => void;
+  onDismissBrowseWorldChoices?: () => void;
+  browseImportStatus?: string | null;
+  browseImportBusy?: boolean;
+  onDismissBrowseImportStatus?: () => void;
 }
 
 export function ResultsPanel(props: Props) {
@@ -1486,16 +1497,174 @@ function OwnedResults({ ownedResult, owned, onToggleOwned }: Props) {
   );
 }
 
-function BrowseResults({ browsePals, owned, onToggleOwned }: Props) {
+function BrowseResults({
+  browsePals,
+  owned,
+  onToggleOwned,
+  onClearOwned,
+  onImportOwnedFromSave,
+  onImportOwnedFromSaveGamesFolder,
+  onImportOwnedFromSaveGamesFiles,
+  browseWorldChoices,
+  onChooseBrowseWorld,
+  onDismissBrowseWorldChoices,
+  browseImportStatus,
+  browseImportBusy,
+  onDismissBrowseImportStatus,
+}: Props) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const folderInputRef = useRef<HTMLInputElement | null>(null);
+  const canImport =
+    Boolean(onImportOwnedFromSave) ||
+    Boolean(onImportOwnedFromSaveGamesFolder) ||
+    Boolean(onImportOwnedFromSaveGamesFiles);
+
   return (
     <section className="results">
       <div className="results-head">
-        <h2>Browse all Pals</h2>
-        <p className="count">{browsePals.length} shown</p>
+        <div>
+          <h2>Browse all Pals</h2>
+          <p className="count">
+            {browsePals.length} shown · {owned.size} owned
+          </p>
+        </div>
+        <div className="results-head-actions">
+          {canImport ? (
+            <>
+              {onImportOwnedFromSave ? (
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".sav,application/octet-stream"
+                  hidden
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (file) void onImportOwnedFromSave(file);
+                  }}
+                />
+              ) : null}
+              {onImportOwnedFromSaveGamesFiles ? (
+                <input
+                  ref={(el) => {
+                    folderInputRef.current = el;
+                    if (el) el.setAttribute("webkitdirectory", "");
+                  }}
+                  type="file"
+                  multiple
+                  hidden
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    e.target.value = "";
+                    if (files && files.length > 0) {
+                      onImportOwnedFromSaveGamesFiles(files);
+                    }
+                  }}
+                />
+              ) : null}
+              {onImportOwnedFromSaveGamesFolder ? (
+                <button
+                  type="button"
+                  className="ghost"
+                  disabled={browseImportBusy}
+                  onClick={() => void onImportOwnedFromSaveGamesFolder()}
+                >
+                  Use SaveGames folder
+                </button>
+              ) : onImportOwnedFromSaveGamesFiles ? (
+                <button
+                  type="button"
+                  className="ghost"
+                  disabled={browseImportBusy}
+                  onClick={() => folderInputRef.current?.click()}
+                >
+                  Use SaveGames folder
+                </button>
+              ) : null}
+              {onImportOwnedFromSave ? (
+                <button
+                  type="button"
+                  className="ghost"
+                  disabled={browseImportBusy}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {browseImportBusy ? "Importing…" : "Import Level.sav"}
+                </button>
+              ) : null}
+            </>
+          ) : null}
+          {onClearOwned && owned.size > 0 ? (
+            <button
+              type="button"
+              className="ghost"
+              disabled={browseImportBusy}
+              onClick={onClearOwned}
+            >
+              Clear owned
+            </button>
+          ) : null}
+        </div>
       </div>
       <p className="hint-inline">
-        Click a Pal to toggle it in your owned set (saved locally).
+        Click pals to mark them owned, or import from Steam saves (parsed in
+        this browser only). Prefer{" "}
+        <strong>Use SaveGames folder</strong> →{" "}
+        <code>%LOCALAPPDATA%\Pal\Saved\SaveGames</code>, or upload a single{" "}
+        <code>Level.sav</code> from a world folder.
       </p>
+      {browseImportStatus ? (
+        <div className="share-banner" role="status">
+          <p>{browseImportStatus}</p>
+          {onDismissBrowseImportStatus ? (
+            <button
+              type="button"
+              className="ghost"
+              onClick={onDismissBrowseImportStatus}
+            >
+              Dismiss
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {browseWorldChoices && browseWorldChoices.length > 0 ? (
+        <div className="browse-world-picker">
+          <div className="browse-world-picker-head">
+            <h3>Choose a world</h3>
+            {onDismissBrowseWorldChoices ? (
+              <button
+                type="button"
+                className="ghost"
+                disabled={browseImportBusy}
+                onClick={onDismissBrowseWorldChoices}
+              >
+                Cancel
+              </button>
+            ) : null}
+          </div>
+          <ul className="browse-world-list">
+            {browseWorldChoices.map((world) => (
+              <li key={world.id}>
+                <button
+                  type="button"
+                  className="browse-world-row"
+                  disabled={browseImportBusy}
+                  onClick={() => onChooseBrowseWorld?.(world)}
+                >
+                  <span className="browse-world-label">{world.label}</span>
+                  <span className="browse-world-path quiet">
+                    {world.relativePath}
+                  </span>
+                  {world.modifiedAt ? (
+                    <span className="browse-world-meta quiet">
+                      {new Date(world.modifiedAt).toLocaleString()}
+                    </span>
+                  ) : null}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
       <ul className="browse-list">
         {browsePals.map((pal) => {
           const isOwned = owned.has(pal.index);

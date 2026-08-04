@@ -10,3 +10,4 @@ data/*.source.json
 font-export
 .vercel
 tmp-eidrolon-frames
+.vendor
