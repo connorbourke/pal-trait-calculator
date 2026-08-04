@@ -36,9 +36,12 @@ Compared against the two reference tools:
 ```bash
 npm run data:fetch   # download palcalc dumps
 npm run data         # normalize into public/data
+npm run build:api    # bundle /api serverless handlers (CJS)
 npm run dev
 npm run build
 ```
+
+API TypeScript lives in `api-src/` and is esbuild-bundled into `api/**/*.js` for Vercel (avoids ESM/CJS resolution issues).
 
 ## API (v1)
 
