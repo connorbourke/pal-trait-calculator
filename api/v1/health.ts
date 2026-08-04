@@ -1,7 +1,15 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getDataset, handleOptions, sendJson } from "../_lib/dataset";
+import {
+  getDataset,
+  handleOptions,
+  sendJson,
+  withApiHandler,
+} from "../_lib/dataset";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default withApiHandler(async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+) {
   if (handleOptions(req, res)) return;
   if (req.method !== "GET") {
     return sendJson(res, 405, { error: "GET only" }, req);
@@ -17,7 +25,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       release: dataset.meta.release,
       auth: {
         postRequiresApiKey: true,
-        headers: ["Authorization: Bearer <PAL_API_KEY>", "x-api-key: <PAL_API_KEY>"],
+        headers: [
+          "Authorization: Bearer <PAL_API_KEY>",
+          "x-api-key: <PAL_API_KEY>",
+        ],
       },
       limits: {
         postPerMinute: 30,
@@ -39,4 +50,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     },
     req,
   );
-}
+});

@@ -1,9 +1,17 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { searchPals } from "../../src/lib/breeding";
-import { getDataset, handleOptions, sendJson } from "../_lib/dataset";
+import {
+  getDataset,
+  handleOptions,
+  sendJson,
+  withApiHandler,
+} from "../_lib/dataset";
 import { clampString, guardGet } from "../_lib/security";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default withApiHandler(async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+) {
   if (handleOptions(req, res)) return;
   if (req.method !== "GET") {
     return sendJson(res, 405, { error: "GET only" }, req);
@@ -39,4 +47,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     },
     req,
   );
-}
+});

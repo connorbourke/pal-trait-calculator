@@ -10,6 +10,7 @@ import {
   readBody,
   sendJson,
   siteOrigin,
+  withApiHandler,
 } from "../_lib/dataset";
 import {
   clampString,
@@ -19,7 +20,10 @@ import {
   sanitizeTree,
 } from "../_lib/security";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default withApiHandler(async function handler(
+  req: VercelRequest,
+  res: VercelResponse,
+) {
   if (handleOptions(req, res)) return;
   if (req.method !== "POST") {
     return sendJson(res, 405, { error: "POST only" }, req);
@@ -78,4 +82,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     },
     req,
   );
-}
+});
