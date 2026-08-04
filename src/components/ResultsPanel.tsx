@@ -183,12 +183,13 @@ function ParentsResults({ target, pairs, owned }: Props) {
 
       {owned.size > 0 ? (
         <p className="hint-inline">
-          Pairs you already own are highlighted and sorted first. Click a row to
-          open that offspring combo.
+          Pairs you already own are highlighted and sorted first, then earlier-game
+          parents. Click a row to open that offspring combo.
         </p>
       ) : (
         <p className="hint-inline">
-          Click a row to open that offspring combo.
+          Sorted by earlier-game parents first. Click a row to open that offspring
+          combo.
         </p>
       )}
 

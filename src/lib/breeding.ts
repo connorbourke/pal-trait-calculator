@@ -1,3 +1,8 @@
+import {
+  acquisitionStats,
+  compareAcquisitionStats,
+  hasWildSpawnBand,
+} from "./acquisition";
 import type {
   BreedingDataset,
   Combo,
@@ -185,6 +190,30 @@ export function findParents(
     const xo = ownedScore(x, options.owned);
     const yo = ownedScore(y, options.owned);
     if (xo !== yo) return xo - yo;
+
+    // Prefer pairs whose harder parent is earlier-game (same idea as path partners).
+    const xWt =
+      (x.parentA.isWorldTreeLocked || x.parentA.isWorldTreeBreedable ? 1 : 0) +
+      (x.parentB.isWorldTreeLocked || x.parentB.isWorldTreeBreedable ? 1 : 0);
+    const yWt =
+      (y.parentA.isWorldTreeLocked || y.parentA.isWorldTreeBreedable ? 1 : 0) +
+      (y.parentB.isWorldTreeLocked || y.parentB.isWorldTreeBreedable ? 1 : 0);
+    if (xWt !== yWt) return xWt - yWt;
+
+    const xWild =
+      (hasWildSpawnBand(x.parentA) ? 0 : 1) +
+      (hasWildSpawnBand(x.parentB) ? 0 : 1);
+    const yWild =
+      (hasWildSpawnBand(y.parentA) ? 0 : 1) +
+      (hasWildSpawnBand(y.parentB) ? 0 : 1);
+    if (xWild !== yWild) return xWild - yWild;
+
+    const acq = compareAcquisitionStats(
+      acquisitionStats([x.parentA, x.parentB]),
+      acquisitionStats([y.parentA, y.parentB]),
+    );
+    if (acq !== 0) return acq;
+
     if (x.sumRarity !== y.sumRarity) return x.sumRarity - y.sumRarity;
     if (x.maxParentRarity !== y.maxParentRarity) {
       return x.maxParentRarity - y.maxParentRarity;
