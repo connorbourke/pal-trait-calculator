@@ -1174,6 +1174,103 @@ a {
   overscroll-behavior: contain;
 }
 
+/* Dense multi-column parent combos (Find the Parents) */
+.parent-combo-list {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0.45rem 0.55rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  gap: 0.2rem 0.85rem;
+  max-height: min(72vh, 760px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--inset-soft);
+}
+
+.parent-combo-row {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.28rem 0.35rem;
+  min-height: 2.1rem;
+  padding: 0.18rem 0.3rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.parent-combo-row:hover {
+  background: var(--hover-fill);
+}
+
+.parent-combo-row:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.parent-combo-row.owned {
+  background: color-mix(in oklab, var(--owned) 70%, transparent);
+}
+
+.parent-combo-row.owned:hover {
+  background: var(--owned);
+}
+
+.parent-combo-op {
+  flex: 0 0 auto;
+  color: var(--muted-strong);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.parent-combo-owned-mark {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.parent-combo-list .pal-portrait {
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
+.parent-combo-list .pal-portrait-art {
+  border-radius: 999px;
+}
+
+.parent-combo-list .pal-portrait.size-sm .pal-portrait-art {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.parent-combo-list .pal-portrait .dex {
+  display: none;
+}
+
+.parent-combo-list .pal-portrait-text {
+  min-width: 0;
+}
+
+.parent-combo-list .pal-portrait .name {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
 .pair,
 .child-equation {
   display: flex;
@@ -1428,6 +1525,7 @@ a {
   }
 
   .pair-list,
+  .parent-combo-list,
   .browse-list,
   .pal-menu {
     max-height: min(48vh, 380px);

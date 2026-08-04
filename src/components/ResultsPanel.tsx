@@ -120,7 +120,6 @@ function palsMatchQuery(
 
 function ParentsResults({ target, pairs, owned }: Props) {
   const [resultsQuery, setResultsQuery] = useState("");
-  const [copiedForHash, setCopiedForHash] = useState<string | null>(null);
 
   const filteredPairs = useMemo(
     () => pairs.filter((pair) => pairMatchesQuery(pair, resultsQuery)),
@@ -177,9 +176,14 @@ function ParentsResults({ target, pairs, owned }: Props) {
 
       {owned.size > 0 ? (
         <p className="hint-inline">
-          Pairs you already own are highlighted and sorted first.
+          Pairs you already own are highlighted and sorted first. Click a row to
+          open that offspring combo.
         </p>
-      ) : null}
+      ) : (
+        <p className="hint-inline">
+          Click a row to open that offspring combo.
+        </p>
+      )}
 
       {pairs.length === 0 ? (
         <p className="quiet">No parent pairs found for this Pal.</p>
@@ -189,7 +193,7 @@ function ParentsResults({ target, pairs, owned }: Props) {
           number.
         </p>
       ) : (
-        <ul className="pair-list">
+        <ul className="parent-combo-list">
           {filteredPairs.map((pair) => {
             const bothOwned =
               owned.has(pair.parentA.index) && owned.has(pair.parentB.index);
@@ -199,70 +203,51 @@ function ParentsResults({ target, pairs, owned }: Props) {
               a: pair.parentA.name,
               b: pair.parentB.name,
             });
-            const childUrl = buildComboUrl({
-              v: 1,
-              mode: "child",
-              a: pair.parentA.name,
-              b: pair.parentB.name,
-            });
+            const label = `${pair.parentA.name} + ${pair.parentB.name} = ${target.name}`;
             return (
               <li key={pair.comboIndex}>
-                <div className={`pair${bothOwned ? " pair-owned" : ""}`}>
+                <button
+                  type="button"
+                  className={`parent-combo-row${bothOwned ? " owned" : ""}`}
+                  title={
+                    pair.genderNote
+                      ? `${label} — ${pair.genderNote}`
+                      : `${label} (open offspring)`
+                  }
+                  aria-label={
+                    pair.genderNote
+                      ? `${label}. ${pair.genderNote}`
+                      : label
+                  }
+                  onClick={() => {
+                    window.location.hash = childHash;
+                  }}
+                >
                   <PalPortrait
                     pal={pair.parentA}
-                    size="md"
+                    size="sm"
                     layout="row"
                     owned={owned.has(pair.parentA.index)}
                   />
-                  <span className="plus" aria-hidden="true">
+                  <span className="parent-combo-op" aria-hidden="true">
                     +
                   </span>
                   <PalPortrait
                     pal={pair.parentB}
-                    size="md"
+                    size="sm"
                     layout="row"
                     owned={owned.has(pair.parentB.index)}
                   />
-                  {pair.sameSpecies ? (
-                    <span className="badge">Same species</span>
-                  ) : null}
+                  <span className="parent-combo-op" aria-hidden="true">
+                    =
+                  </span>
+                  <PalPortrait pal={target} size="sm" layout="row" />
                   {bothOwned ? (
-                    <span className="badge owned-badge">Owned</span>
+                    <span className="parent-combo-owned-mark" aria-hidden="true">
+                      ●
+                    </span>
                   ) : null}
-                </div>
-                {pair.genderNote ? (
-                  <p className="gender-note">{pair.genderNote}</p>
-                ) : null}
-                <div className="save-plan-control">
-                  <button
-                    type="button"
-                    className="ghost"
-                    onClick={() => {
-                      window.location.hash = childHash;
-                    }}
-                    aria-label={`Open offspring for ${pair.parentA.name} + ${pair.parentB.name}`}
-                  >
-                    Offspring link
-                  </button>
-                  <button
-                    type="button"
-                    className="ghost"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(childUrl);
-                        setCopiedForHash(childHash);
-                        window.setTimeout(() => {
-                          setCopiedForHash((prev) => (prev === childHash ? null : prev));
-                        }, 2500);
-                      } catch {
-                        // Clipboard may be blocked; no hard failure required.
-                      }
-                    }}
-                    aria-label={`Copy offspring link for ${pair.parentA.name} + ${pair.parentB.name}`}
-                  >
-                    {copiedForHash === childHash ? "Copied" : "Copy link"}
-                  </button>
-                </div>
+                </button>
               </li>
             );
           })}
