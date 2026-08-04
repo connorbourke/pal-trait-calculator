@@ -1554,3 +1554,472 @@ a {
     transform: translateY(-6px);
   }
 }
+
+/* Shared plan / specimen injection (Chester-style instance cards) */
+.share-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  border-radius: 10px;
+}
+
+.share-banner p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.results-head-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.specimen-strip {
+  margin-bottom: 1.1rem;
+}
+
+.specimen-strip-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.specimen-strip-note {
+  margin: 0 0 0.7rem;
+}
+
+.specimen-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 0.85rem;
+}
+
+.pal-instance-card {
+  padding: 0.85rem 0.9rem 0.95rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in oklab, var(--accent) 14%, transparent),
+      transparent 48%
+    ),
+    var(--panel-solid);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+
+.pal-instance-head {
+  display: grid;
+  grid-template-columns: 3.4rem 1fr;
+  gap: 0.7rem;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.pal-instance-art {
+  width: 3.4rem;
+  height: 3.4rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--line-soft);
+  background: var(--inset);
+  display: grid;
+  place-items: center;
+}
+
+.pal-instance-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pal-instance-art.fallback {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.pal-instance-name {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pal-instance-internal {
+  margin: 0.2rem 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.pal-instance-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.pal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--line-soft);
+  background: var(--inset);
+  color: var(--ink);
+}
+
+.pal-badge-level {
+  border-color: var(--line-strong);
+  background: color-mix(in oklab, var(--accent) 22%, var(--inset));
+  color: var(--accent-text);
+  font-size: 0.8rem;
+}
+
+.pal-badge-gender {
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.pal-badge-gender.gender-male {
+  background: #2f6fb5;
+  border-color: #5ea0e8;
+  color: #fff;
+}
+
+.pal-badge-gender.gender-female {
+  background: #b53f6e;
+  border-color: #e87aa6;
+  color: #fff;
+}
+
+.pal-badge-stars {
+  color: #f5c84a;
+  letter-spacing: 0.05em;
+}
+
+.pal-stars-empty {
+  color: color-mix(in oklab, var(--muted) 55%, transparent);
+}
+
+.pal-badge-alpha {
+  background: color-mix(in oklab, var(--accent) 28%, var(--inset));
+  border-color: var(--line-strong);
+  color: var(--accent-text);
+}
+
+.pal-badge-element {
+  text-transform: capitalize;
+}
+
+.pal-element-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #9b6dff;
+}
+
+.pal-element-dot.element-dark {
+  background: #8b5cf6;
+}
+.pal-element-dot.element-fire {
+  background: #ef6b3a;
+}
+.pal-element-dot.element-water {
+  background: #3b82f6;
+}
+.pal-element-dot.element-grass,
+.pal-element-dot.element-leaf {
+  background: #4ade80;
+}
+.pal-element-dot.element-electric,
+.pal-element-dot.element-lightning {
+  background: #facc15;
+}
+.pal-element-dot.element-ice {
+  background: #7dd3fc;
+}
+.pal-element-dot.element-dragon {
+  background: #a78bfa;
+}
+.pal-element-dot.element-ground,
+.pal-element-dot.element-earth {
+  background: #c4a484;
+}
+.pal-element-dot.element-neutral {
+  background: #d4d4d8;
+}
+
+.pal-badge-role {
+  opacity: 0.85;
+  font-size: 0.65rem;
+  color: var(--muted-strong);
+}
+
+.pal-instance-section {
+  margin-bottom: 0.7rem;
+}
+
+.pal-instance-section h5 {
+  margin: 0 0 0.35rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.passive-nameplates {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Game-accurate nameplates — intentionally off our theme accents */
+.passive-nameplate {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 650;
+  border: 1px solid #8a8f9a;
+  background: linear-gradient(180deg, #3a3e48 0%, #22252c 100%);
+  color: #f2f4f8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.passive-nameplate.rank-rainbow {
+  /* Mid slate-teal, slightly lifted — light text stays legible */
+  border-color: transparent;
+  background:
+    linear-gradient(180deg, #347078 0%, #245960 55%, #1b4a52 100%) padding-box,
+    linear-gradient(
+      120deg,
+      #ff6b6b,
+      #f5c84a,
+      #6ee7b7,
+      #60a5fa,
+      #c084fc,
+      #ff6b6b
+    )
+      border-box;
+  border: 1.5px solid transparent;
+  box-shadow:
+    0 0 12px rgba(90, 170, 190, 0.24),
+    inset 0 1px 0 rgba(200, 240, 245, 0.16);
+  color: #f2fcff;
+  text-shadow: 0 1px 1px rgba(0, 20, 24, 0.35);
+  font-weight: 700;
+}
+
+.passive-nameplate.rank-plus3 {
+  border-color: #d4a017;
+  background: linear-gradient(180deg, #4a3a18 0%, #2a220e 100%);
+  color: #ffe9a8;
+}
+
+.passive-nameplate.rank-plus2 {
+  border-color: #6ea8d8;
+  background: linear-gradient(180deg, #1e3348 0%, #152230 100%);
+  color: #d7ecff;
+}
+
+/* White / common (+1) — Work Slave, etc. */
+.passive-nameplate.rank-plus1 {
+  border-color: #d8dde8;
+  background: linear-gradient(180deg, #f4f6fa 0%, #d5dae6 100%);
+  color: #2a303c;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.passive-nameplate.rank-neutral,
+.passive-nameplate.rank-unknown {
+  border-color: #8a8f9a;
+  background: linear-gradient(180deg, #3a3e48 0%, #22252c 100%);
+  color: #f2f4f8;
+}
+
+/* Red negatives — Glutton (−1), etc. */
+.passive-nameplate.rank-minus1 {
+  border-color: #e07070;
+  background: linear-gradient(180deg, #6a2424 0%, #3a1212 100%);
+  color: #ffd6d6;
+}
+
+.passive-nameplate.rank-minus2 {
+  border-color: #ef5555;
+  background: linear-gradient(180deg, #7a1c1c 0%, #3f0e0e 100%);
+  color: #ffe0e0;
+}
+
+.passive-nameplate.rank-minus3 {
+  border-color: #ff4040;
+  background: linear-gradient(180deg, #8a1414 0%, #420909 100%);
+  color: #fff0f0;
+  box-shadow: 0 0 8px rgba(255, 64, 64, 0.28);
+}
+
+.pal-iv-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.pal-iv-box {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.4rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--inset);
+  border: 1px solid var(--line-soft);
+}
+
+.pal-iv-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pal-iv-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.pal-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.pal-stat-box {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: var(--inset);
+  border: 1px solid var(--line-soft);
+}
+
+.pal-stat-label {
+  font-size: 0.78rem;
+  color: var(--muted-strong);
+}
+
+.pal-stat-value {
+  font-size: 1.05rem;
+  font-weight: 750;
+  color: var(--accent-text);
+}
+
+.pal-instance-ownership {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.75rem;
+  margin: 0.15rem 0 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.82rem;
+}
+
+.pal-instance-ownership dt {
+  color: var(--muted);
+}
+
+.pal-instance-ownership dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.specimen-step-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.specimen-inline {
+  display: contents;
+}
+
+.specimen-chip {
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.12rem 0.4rem;
+  border-radius: 6px;
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, transparent);
+}
+
+.path-step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.path-step-pal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.path-step-pal-head {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.path-step-passives {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 11rem;
+}
+
+.passive-nameplate.compact {
+  font-size: 0.68rem;
+  padding: 0.12rem 0.4rem;
+  line-height: 1.2;
+}
+
+.path-step-meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+}
+
+
+

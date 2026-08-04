@@ -7,9 +7,17 @@ import {
   pathStepKey,
   type SavedPathPlan,
 } from "../lib/savedPaths";
+import {
+  normalizePassive,
+  passiveRankClass,
+  type SpecimenPassive,
+  type SpecimenV1,
+} from "../lib/specimens";
+import type { ShareTreePal, ShareTreeV1 } from "../lib/shareTree";
 import { formatWork } from "../lib/breeding";
 import { PalPortrait } from "./PalPortrait";
 import { PalSelect } from "./PalSelect";
+import { SpecimenInlineNotes, SpecimenStrip } from "./SpecimenStrip";
 
 interface Props {
   mode: Mode;
@@ -45,8 +53,14 @@ interface Props {
   onLoadMorePaths: () => void;
   activeSavedPlan: SavedPathPlan | null;
   onSavePath: (path: PathResult) => boolean;
+  onSaveActivePlan: () => boolean;
+  onCopyShareLink: () => boolean;
   onToggleSavedStep: (stepKey: string, completed: boolean) => void;
   onClearActiveSavedPlan: () => void;
+  specimens: SpecimenV1[];
+  shareBanner: string | null;
+  onDismissShareBanner: () => void;
+  resolveSpecimenPal?: (species: string) => Pal | null;
   ownedResult: OwnedBreedResult | null;
   browsePals: Pal[];
   owned: Set<number>;
@@ -293,15 +307,31 @@ function PathResults({
   onLoadMorePaths,
   activeSavedPlan,
   onSavePath,
+  onSaveActivePlan,
+  onCopyShareLink,
   onToggleSavedStep,
   onClearActiveSavedPlan,
+  specimens,
+  shareBanner,
+  onDismissShareBanner,
+  resolveSpecimenPal,
 }: Props) {
   if (activeSavedPlan) {
     return (
       <SavedPlanResults
         plan={activeSavedPlan}
+        specimens={activeSavedPlan.specimens ?? specimens}
+        resolveSpecimenPal={resolveSpecimenPal}
+        isUnsavedSession={Boolean(
+          activeSavedPlan.source === "share" &&
+            activeSavedPlan.id.startsWith("shared-"),
+        )}
+        onSaveActivePlan={onSaveActivePlan}
+        onCopyShareLink={onCopyShareLink}
         onToggleSavedStep={onToggleSavedStep}
         onClearActiveSavedPlan={onClearActiveSavedPlan}
+        shareBanner={shareBanner}
+        onDismissShareBanner={onDismissShareBanner}
       />
     );
   }
@@ -314,6 +344,11 @@ function PathResults({
   if (!ready) {
     return (
       <section className="results">
+        <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+        <SpecimenStrip
+          specimens={specimens}
+          resolvePal={resolveSpecimenPal}
+        />
         <h2>Trait path planner</h2>
         <p className="quiet">
           {pathPlannerMode === "chain"
@@ -349,6 +384,11 @@ function PathResults({
         mergeAllCount={mergeAllCount}
         onLoadMorePaths={onLoadMorePaths}
         onSavePath={onSavePath}
+        onCopyShareLink={onCopyShareLink}
+        specimens={specimens}
+        shareBanner={shareBanner}
+        onDismissShareBanner={onDismissShareBanner}
+        resolveSpecimenPal={resolveSpecimenPal}
         {...tagProps}
       />
     );
@@ -364,8 +404,31 @@ function PathResults({
       chainAllCount={chainAllCount}
       onLoadMorePaths={onLoadMorePaths}
       onSavePath={onSavePath}
+      onCopyShareLink={onCopyShareLink}
+      specimens={specimens}
+      shareBanner={shareBanner}
+      onDismissShareBanner={onDismissShareBanner}
+      resolveSpecimenPal={resolveSpecimenPal}
       {...tagProps}
     />
+  );
+}
+
+function ShareBanner({
+  message,
+  onDismiss,
+}: {
+  message: string | null;
+  onDismiss: () => void;
+}) {
+  if (!message) return null;
+  return (
+    <div className="share-banner" role="status">
+      <p>{message}</p>
+      <button type="button" className="ghost" onClick={onDismiss}>
+        Dismiss
+      </button>
+    </div>
   );
 }
 
@@ -488,6 +551,11 @@ function ChainPathResults({
   chainAllCount,
   onLoadMorePaths,
   onSavePath,
+  onCopyShareLink,
+  specimens,
+  shareBanner,
+  onDismissShareBanner,
+  resolveSpecimenPal,
   ...tagProps
 }: {
   pathStart: Pal | null;
@@ -498,6 +566,11 @@ function ChainPathResults({
   chainAllCount: number;
   onLoadMorePaths: () => void;
   onSavePath: (path: PathResult) => boolean;
+  onCopyShareLink: () => boolean;
+  specimens: SpecimenV1[];
+  shareBanner: string | null;
+  onDismissShareBanner: () => void;
+  resolveSpecimenPal?: (species: string) => Pal | null;
 } & PathTagFilterProps) {
   if (
     pathStart &&
@@ -507,6 +580,11 @@ function ChainPathResults({
   ) {
     return (
       <section className="results">
+        <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+        <SpecimenStrip
+          specimens={specimens}
+          resolvePal={resolveSpecimenPal}
+        />
         <h2>Trait path planner</h2>
         <p className="quiet">Already at the target — no breeds needed.</p>
       </section>
@@ -516,6 +594,11 @@ function ChainPathResults({
   if (chainAllCount === 0) {
     return (
       <section className="results">
+        <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+        <SpecimenStrip
+          specimens={specimens}
+          resolvePal={resolveSpecimenPal}
+        />
         <h2>Trait path planner</h2>
         <p className="quiet">No breeding route found for that setup.</p>
       </section>
@@ -530,6 +613,8 @@ function ChainPathResults({
 
   return (
     <section className="results">
+      <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+      <SpecimenStrip specimens={specimens} resolvePal={resolveSpecimenPal} />
       <div className="results-head">
         <div className="results-target">
           {pathStart ? (
@@ -546,14 +631,17 @@ function ChainPathResults({
             <PalPortrait pal={pathTarget} size="md" layout="row" />
           ) : null}
         </div>
-        <p className="count">
-          {chainTotalCount.toLocaleString()}
-          {tagsActive ? ` of ${chainAllCount.toLocaleString()}` : ""} route
-          {chainTotalCount === 1 ? "" : "s"}
-          {showing < chainTotalCount
-            ? ` · showing ${showing.toLocaleString()}`
-            : ""}
-        </p>
+        <div className="results-head-actions">
+          <p className="count">
+            {chainTotalCount.toLocaleString()}
+            {tagsActive ? ` of ${chainAllCount.toLocaleString()}` : ""} route
+            {chainTotalCount === 1 ? "" : "s"}
+            {showing < chainTotalCount
+              ? ` · showing ${showing.toLocaleString()}`
+              : ""}
+          </p>
+          <CopyShareButton onCopyShareLink={onCopyShareLink} />
+        </div>
       </div>
 
       <PathPairingTagFilters {...tagProps} />
@@ -574,6 +662,7 @@ function ChainPathResults({
                 path={path}
                 index={index}
                 onSavePath={onSavePath}
+                specimens={specimens}
               />
             ))}
           </div>
@@ -602,6 +691,11 @@ function MergePathResults({
   mergeAllCount,
   onLoadMorePaths,
   onSavePath,
+  onCopyShareLink,
+  specimens,
+  shareBanner,
+  onDismissShareBanner,
+  resolveSpecimenPal,
   ...tagProps
 }: {
   pathTraitA: Pal | null;
@@ -612,6 +706,11 @@ function MergePathResults({
   mergeAllCount: number;
   onLoadMorePaths: () => void;
   onSavePath: (path: PathResult) => boolean;
+  onCopyShareLink: () => boolean;
+  specimens: SpecimenV1[];
+  shareBanner: string | null;
+  onDismissShareBanner: () => void;
+  resolveSpecimenPal?: (species: string) => Pal | null;
 } & PathTagFilterProps) {
   if (
     pathTraitA &&
@@ -622,6 +721,11 @@ function MergePathResults({
   ) {
     return (
       <section className="results">
+        <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+        <SpecimenStrip
+          specimens={specimens}
+          resolvePal={resolveSpecimenPal}
+        />
         <h2>Trait path planner</h2>
         <p className="quiet">Already the target species — no breeds needed.</p>
       </section>
@@ -631,6 +735,11 @@ function MergePathResults({
   if (mergeAllCount === 0) {
     return (
       <section className="results">
+        <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+        <SpecimenStrip
+          specimens={specimens}
+          resolvePal={resolveSpecimenPal}
+        />
         <h2>Trait path planner</h2>
         <p className="quiet">No merge tree found that uses both parents.</p>
       </section>
@@ -645,6 +754,8 @@ function MergePathResults({
 
   return (
     <section className="results">
+      <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+      <SpecimenStrip specimens={specimens} resolvePal={resolveSpecimenPal} />
       <div className="results-head">
         <div className="results-target">
           {pathTraitA ? (
@@ -659,15 +770,18 @@ function MergePathResults({
             <PalPortrait pal={pathTarget} size="md" layout="row" />
           ) : null}
         </div>
-        <p className="count">
-          {mergeTotalCount.toLocaleString()}
-          {tagsActive ? ` of ${mergeAllCount.toLocaleString()}` : ""} merge
-          tree
-          {mergeTotalCount === 1 ? "" : "s"}
-          {showing < mergeTotalCount
-            ? ` · showing ${showing.toLocaleString()}`
-            : ""}
-        </p>
+        <div className="results-head-actions">
+          <p className="count">
+            {mergeTotalCount.toLocaleString()}
+            {tagsActive ? ` of ${mergeAllCount.toLocaleString()}` : ""} merge
+            tree
+            {mergeTotalCount === 1 ? "" : "s"}
+            {showing < mergeTotalCount
+              ? ` · showing ${showing.toLocaleString()}`
+              : ""}
+          </p>
+          <CopyShareButton onCopyShareLink={onCopyShareLink} />
+        </div>
       </div>
 
       <PathPairingTagFilters {...tagProps} />
@@ -688,6 +802,7 @@ function MergePathResults({
                 path={path}
                 index={index}
                 onSavePath={onSavePath}
+                specimens={specimens}
               />
             ))}
           </div>
@@ -718,10 +833,12 @@ function ChainRouteCard({
   path,
   index,
   onSavePath,
+  specimens,
 }: {
   path: PathResult;
   index: number;
   onSavePath: (path: PathResult) => boolean;
+  specimens: SpecimenV1[];
 }) {
   return (
     <article className="merge-tree-card">
@@ -740,7 +857,11 @@ function ChainRouteCard({
       {path.steps.length === 0 ? (
         <p className="quiet">Already at the target — no breeds needed.</p>
       ) : (
-        <PathSection title="Breeding steps" steps={path.steps} />
+        <PathSection
+          title="Breeding steps"
+          steps={path.steps}
+          specimens={specimens}
+        />
       )}
     </article>
   );
@@ -757,10 +878,12 @@ function MergeTreeCard({
   path,
   index,
   onSavePath,
+  specimens,
 }: {
   path: PathResult;
   index: number;
   onSavePath: (path: PathResult) => boolean;
+  specimens: SpecimenV1[];
 }) {
   const branchA = path.steps.filter((s) => s.role === "branch-a");
   const branchB = path.steps.filter((s) => s.role === "branch-b");
@@ -794,13 +917,62 @@ function MergeTreeCard({
         <p className="quiet">Already at the target — no breeds needed.</p>
       ) : (
         <div className="tree-sections">
-          <PathSection title="Branch A — from trait parent A" steps={branchA} />
-          <PathSection title="Branch B — from trait parent B" steps={branchB} />
-          <PathSection title="Merge — combine the two branches" steps={mergeSteps} />
-          <PathSection title="Finish — to target" steps={finishSteps} />
+          <PathSection
+            title="Branch A — from trait parent A"
+            steps={branchA}
+            specimens={specimens}
+          />
+          <PathSection
+            title="Branch B — from trait parent B"
+            steps={branchB}
+            specimens={specimens}
+          />
+          <PathSection
+            title="Merge — combine the two branches"
+            steps={mergeSteps}
+            specimens={specimens}
+          />
+          <PathSection
+            title="Finish — to target"
+            steps={finishSteps}
+            specimens={specimens}
+          />
         </div>
       )}
     </article>
+  );
+}
+
+function CopyShareButton({
+  onCopyShareLink,
+}: {
+  onCopyShareLink: () => boolean;
+}) {
+  const [tip, setTip] = useState(false);
+
+  useEffect(() => {
+    if (!tip) return;
+    const timer = window.setTimeout(() => setTip(false), 2500);
+    return () => window.clearTimeout(timer);
+  }, [tip]);
+
+  return (
+    <div className="save-plan-control">
+      <button
+        type="button"
+        className="ghost"
+        onClick={() => {
+          if (onCopyShareLink()) setTip(true);
+        }}
+      >
+        Copy share link
+      </button>
+      {tip ? (
+        <div className="save-plan-tip" role="status">
+          Link copied — paste it in chat or Discord
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -841,22 +1013,41 @@ function SavePlanButton({
 
 function SavedPlanResults({
   plan,
+  specimens,
+  resolveSpecimenPal,
+  isUnsavedSession,
+  onSaveActivePlan,
+  onCopyShareLink,
   onToggleSavedStep,
   onClearActiveSavedPlan,
+  shareBanner,
+  onDismissShareBanner,
 }: {
   plan: SavedPathPlan;
+  specimens: SpecimenV1[];
+  resolveSpecimenPal?: (species: string) => Pal | null;
+  isUnsavedSession: boolean;
+  onSaveActivePlan: () => boolean;
+  onCopyShareLink: () => boolean;
   onToggleSavedStep: (stepKey: string, completed: boolean) => void;
   onClearActiveSavedPlan: () => void;
+  shareBanner: string | null;
+  onDismissShareBanner: () => void;
 }) {
   const path = pathResultFromSnapshot(plan.result);
   const completed = new Set(plan.completedStepKeys);
   const total = path.steps.length;
-  const done = path.steps.filter((step) => completed.has(pathStepKey(step))).length;
+  const done = path.steps.filter((step) =>
+    completed.has(pathStepKey(step)),
+  ).length;
 
   const branchA = path.steps.filter((s) => s.role === "branch-a");
   const branchB = path.steps.filter((s) => s.role === "branch-b");
   const mergeSteps = path.steps.filter((s) => s.role === "merge");
   const finishSteps = path.steps.filter((s) => s.role === "finish");
+  const chainish =
+    plan.plannerMode === "chain" ||
+    path.steps.every((s) => !s.role || s.role === "chain");
   const trackProgress = {
     completedKeys: completed,
     onToggle: onToggleSavedStep,
@@ -864,55 +1055,109 @@ function SavedPlanResults({
 
   return (
     <section className="results">
+      <ShareBanner message={shareBanner} onDismiss={onDismissShareBanner} />
+      <SpecimenStrip specimens={specimens} resolvePal={resolveSpecimenPal} />
       <div className="results-head">
         <div className="saved-plan-view-head">
           <h2>{plan.name}</h2>
           <p className="quiet">
-            Saved {plan.plannerMode === "merge" ? "merge tree" : "route"} ·{" "}
+            {isUnsavedSession
+              ? "Shared tree (not saved yet)"
+              : `Saved ${plan.plannerMode === "merge" ? "merge tree" : "route"}`}
+            {" · "}
             {done}/{total} steps done
           </p>
         </div>
-        <button type="button" className="ghost" onClick={onClearActiveSavedPlan}>
-          Back to search results
-        </button>
+        <div className="results-head-actions">
+          {isUnsavedSession ? (
+            <SaveActivePlanButton onSaveActivePlan={onSaveActivePlan} />
+          ) : null}
+          <CopyShareButton onCopyShareLink={onCopyShareLink} />
+          <button type="button" className="ghost" onClick={onClearActiveSavedPlan}>
+            Back to search results
+          </button>
+        </div>
       </div>
 
       <article className="merge-tree-card saved-plan-card">
         {path.summary ? <p className="hint-inline">{path.summary}</p> : null}
         {path.steps.length === 0 ? (
           <p className="quiet">Already at the target — no breeds needed.</p>
-        ) : plan.plannerMode === "merge" ? (
+        ) : chainish ? (
+          <PathSection
+            title="Breeding steps"
+            steps={path.steps}
+            progress={trackProgress}
+            specimens={specimens}
+            tree={plan.tree}
+          />
+        ) : (
           <div className="tree-sections">
             <PathSection
               title="Branch A — from trait parent A"
               steps={branchA}
               progress={trackProgress}
+              specimens={specimens}
+              tree={plan.tree}
             />
             <PathSection
               title="Branch B — from trait parent B"
               steps={branchB}
               progress={trackProgress}
+              specimens={specimens}
+              tree={plan.tree}
             />
             <PathSection
               title="Merge — combine the two branches"
               steps={mergeSteps}
               progress={trackProgress}
+              specimens={specimens}
+              tree={plan.tree}
             />
             <PathSection
               title="Finish — to target"
               steps={finishSteps}
               progress={trackProgress}
+              specimens={specimens}
+              tree={plan.tree}
             />
           </div>
-        ) : (
-          <PathSection
-            title="Breeding steps"
-            steps={path.steps}
-            progress={trackProgress}
-          />
         )}
       </article>
     </section>
+  );
+}
+
+function SaveActivePlanButton({
+  onSaveActivePlan,
+}: {
+  onSaveActivePlan: () => boolean;
+}) {
+  const [tip, setTip] = useState(false);
+
+  useEffect(() => {
+    if (!tip) return;
+    const timer = window.setTimeout(() => setTip(false), 5000);
+    return () => window.clearTimeout(timer);
+  }, [tip]);
+
+  return (
+    <div className="save-plan-control">
+      <button
+        type="button"
+        className="ghost"
+        onClick={() => {
+          if (onSaveActivePlan()) setTip(true);
+        }}
+      >
+        Save this plan
+      </button>
+      {tip ? (
+        <div className="save-plan-tip" role="status">
+          Saved — find it anytime in Settings (gear icon)
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -920,6 +1165,8 @@ function PathSection({
   title,
   steps,
   progress,
+  specimens = [],
+  tree,
 }: {
   title: string;
   steps: PathStep[];
@@ -927,6 +1174,8 @@ function PathSection({
     completedKeys: Set<string>;
     onToggle: (stepKey: string, completed: boolean) => void;
   };
+  specimens?: SpecimenV1[];
+  tree?: ShareTreeV1;
 }) {
   if (steps.length === 0) return null;
   return (
@@ -936,6 +1185,21 @@ function PathSection({
         {steps.map((step, index) => {
           const key = pathStepKey(step);
           const done = progress?.completedKeys.has(key) ?? false;
+          const treeStep =
+            tree?.steps.find(
+              (s) =>
+                speciesOfTreePal(s.from) === step.from.name &&
+                speciesOfTreePal(s.partner) === step.partner.name &&
+                speciesOfTreePal(s.child) === step.child.name,
+            ) ?? tree?.steps[index];
+          const metaBits = [
+            step.note?.trim() || treeStep?.note?.trim(),
+            step.pool != null
+              ? `Pool ${step.pool}`
+              : treeStep?.pool != null
+                ? `Pool ${treeStep.pool}`
+                : null,
+          ].filter(Boolean);
           return (
             <li
               key={`${key}-${index}`}
@@ -953,14 +1217,49 @@ function PathSection({
               ) : (
                 <span className="step-num">{index + 1}</span>
               )}
-              <div className={`pair${step.role === "merge" ? " pair-owned" : ""}`}>
-                <PalPortrait pal={step.from} size="md" layout="row" />
-                <span className="plus">+</span>
-                <PalPortrait pal={step.partner} size="md" layout="row" />
-                <span className="plus">→</span>
-                <PalPortrait pal={step.child} size="md" layout="row" />
-                {step.role === "merge" ? (
-                  <span className="badge owned-badge">Merge</span>
+              <div className="path-step-body">
+                <div
+                  className={`pair${step.role === "merge" ? " pair-owned" : ""}`}
+                >
+                  <StepPalBlock
+                    pal={step.from}
+                    side={treeStep?.from}
+                    specimens={specimens}
+                  />
+                  <span className="plus">+</span>
+                  <StepPalBlock
+                    pal={step.partner}
+                    side={treeStep?.partner}
+                    specimens={specimens}
+                  />
+                  <span className="plus">→</span>
+                  <StepPalBlock
+                    pal={step.child}
+                    side={treeStep?.child}
+                    specimens={specimens}
+                  />
+                  {step.role === "merge" ? (
+                    <span className="badge owned-badge">Merge</span>
+                  ) : null}
+                </div>
+                {metaBits.length ? (
+                  <p className="path-step-meta quiet">{metaBits.join(" · ")}</p>
+                ) : null}
+                {!tree && specimens.length > 0 ? (
+                  <div className="specimen-step-notes">
+                    <SpecimenInlineNotes
+                      specimens={specimens}
+                      speciesName={step.from.name}
+                    />
+                    <SpecimenInlineNotes
+                      specimens={specimens}
+                      speciesName={step.partner.name}
+                    />
+                    <SpecimenInlineNotes
+                      specimens={specimens}
+                      speciesName={step.child.name}
+                    />
+                  </div>
                 ) : null}
               </div>
             </li>
@@ -969,6 +1268,64 @@ function PathSection({
       </ol>
     </div>
   );
+}
+
+function StepPalBlock({
+  pal,
+  side,
+  specimens,
+}: {
+  pal: Pal;
+  side?: string | ShareTreePal;
+  specimens: SpecimenV1[];
+}) {
+  const fromSide =
+    side && typeof side !== "string"
+      ? side
+      : specimens.find(
+          (s) => s.species.trim().toLowerCase() === pal.name.trim().toLowerCase(),
+        );
+  const gender =
+    fromSide && "gender" in fromSide ? fromSide.gender : undefined;
+  const passives: SpecimenPassive[] = (
+    fromSide && "passives" in fromSide && fromSide.passives
+      ? fromSide.passives
+      : []
+  ).map(normalizePassive);
+
+  return (
+    <div className="path-step-pal">
+      <div className="path-step-pal-head">
+        <PalPortrait pal={pal} size="md" layout="row" />
+        {gender && gender !== "unknown" ? (
+          <span
+            className={`pal-badge pal-badge-gender gender-${gender}`}
+            title={gender}
+            aria-label={gender}
+          >
+            {gender === "male" ? "♂" : "♀"}
+          </span>
+        ) : null}
+      </div>
+      {passives.length > 0 ? (
+        <ul className="path-step-passives">
+          {passives.map((p) => (
+            <li
+              key={p.name}
+              className={`passive-nameplate compact ${passiveRankClass(p.rank)}`}
+              title={p.description}
+            >
+              {p.name}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+function speciesOfTreePal(value: string | ShareTreePal): string {
+  return typeof value === "string" ? value : value.species;
 }
 
 function OwnedResults({ ownedResult, owned, onToggleOwned }: Props) {

@@ -14,8 +14,20 @@ function pairKey(a: number, b: number): string {
   return a <= b ? `${a}|${b}` : `${b}|${a}`;
 }
 
-export async function loadDataset(): Promise<BreedingDataset> {
-  const [
+export type DatasetParts = {
+  meta: DatasetMeta;
+  pals: Pal[];
+  combos: Combo[];
+  byChild: number[][];
+  byParent: number[][];
+  specialGenders: SpecialGenderCombo[];
+  mutationPassives: MutationPassive[];
+  minStepEdges: MinStepEdge[];
+};
+
+/** Assemble indexes / matrices from normalized JSON parts (browser or Node). */
+export function assembleDataset(parts: DatasetParts): BreedingDataset {
+  const {
     meta,
     pals,
     combos,
@@ -24,22 +36,7 @@ export async function loadDataset(): Promise<BreedingDataset> {
     specialGenders,
     mutationPassives,
     minStepEdges,
-  ] = await Promise.all([
-    fetch("/data/meta.json").then((r) => r.json() as Promise<DatasetMeta>),
-    fetch("/data/pals.json").then((r) => r.json() as Promise<Pal[]>),
-    fetch("/data/combos.json").then((r) => r.json() as Promise<Combo[]>),
-    fetch("/data/by-child.json").then((r) => r.json() as Promise<number[][]>),
-    fetch("/data/by-parent.json").then((r) => r.json() as Promise<number[][]>),
-    fetch("/data/special-genders.json").then(
-      (r) => r.json() as Promise<SpecialGenderCombo[]>,
-    ),
-    fetch("/data/mutation-passives.json").then(
-      (r) => r.json() as Promise<MutationPassive[]>,
-    ),
-    fetch("/data/min-steps.json").then(
-      (r) => r.json() as Promise<MinStepEdge[]>,
-    ),
-  ]);
+  } = parts;
 
   const byInternalName = new Map(pals.map((p) => [p.internalName, p]));
   const byName = new Map(pals.map((p) => [p.name.toLowerCase(), p]));
@@ -69,6 +66,45 @@ export async function loadDataset(): Promise<BreedingDataset> {
     byName,
     pairToChild,
   };
+}
+
+export async function loadDataset(): Promise<BreedingDataset> {
+  const [
+    meta,
+    pals,
+    combos,
+    byChild,
+    byParent,
+    specialGenders,
+    mutationPassives,
+    minStepEdges,
+  ] = await Promise.all([
+    fetch("/data/meta.json").then((r) => r.json() as Promise<DatasetMeta>),
+    fetch("/data/pals.json").then((r) => r.json() as Promise<Pal[]>),
+    fetch("/data/combos.json").then((r) => r.json() as Promise<Combo[]>),
+    fetch("/data/by-child.json").then((r) => r.json() as Promise<number[][]>),
+    fetch("/data/by-parent.json").then((r) => r.json() as Promise<number[][]>),
+    fetch("/data/special-genders.json").then(
+      (r) => r.json() as Promise<SpecialGenderCombo[]>,
+    ),
+    fetch("/data/mutation-passives.json").then(
+      (r) => r.json() as Promise<MutationPassive[]>,
+    ),
+    fetch("/data/min-steps.json").then(
+      (r) => r.json() as Promise<MinStepEdge[]>,
+    ),
+  ]);
+
+  return assembleDataset({
+    meta,
+    pals,
+    combos,
+    byChild,
+    byParent,
+    specialGenders,
+    mutationPassives,
+    minStepEdges,
+  });
 }
 
 export function findChild(

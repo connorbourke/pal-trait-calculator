@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ModeToggle } from "./components/ModeToggle";
 import { PalPortrait } from "./components/PalPortrait";
 import { PalSelect } from "./components/PalSelect";
@@ -48,6 +48,16 @@ import {
   type SavedPathPlan,
 } from "./lib/savedPaths";
 import {
+  buildViewUrl,
+  encodeSharePayload,
+  parseShareFromLocation,
+  resolvePalName,
+  resolveSharePayload,
+  sharePayloadFromPlanner,
+  treeForShare,
+} from "./lib/share";
+import type { SpecimenV1 } from "./lib/specimens";
+import {
   applyTheme,
   loadTheme,
   saveTheme,
@@ -95,6 +105,11 @@ export default function App() {
   const [activeSavedPlanId, setActiveSavedPlanId] = useState<string | null>(
     null,
   );
+  const [specimens, setSpecimens] = useState<SpecimenV1[]>([]);
+  const [shareBanner, setShareBanner] = useState<string | null>(null);
+  /** Shared/imported plan preview before (or instead of) local save. */
+  const [sessionPlan, setSessionPlan] = useState<SavedPathPlan | null>(null);
+  const lastShareKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     applyTheme(theme);
@@ -122,6 +137,73 @@ export default function App() {
       cancelled = true;
     };
   }, []);
+
+  // Hydrate canned links / chatbot share payloads when dataset or URL hash changes.
+  useEffect(() => {
+    if (!dataset) return;
+
+    const applyShareFromLocation = () => {
+      const payload = parseShareFromLocation(
+        window.location.search,
+        window.location.hash,
+      );
+      if (!payload) return;
+
+      const shareKey = encodeSharePayload(payload);
+      if (lastShareKeyRef.current === shareKey) return;
+      lastShareKeyRef.current = shareKey;
+
+      const resolved = resolveSharePayload(dataset, payload);
+      setMode("path");
+      setPathPlannerMode(resolved.mode);
+      setIncludeTargetAsParent(resolved.includeTargetAsParent);
+      setActiveSavedPlanId(null);
+      setPathPairTags([]);
+      setPathExcludeTags([]);
+      setPathVisibleCount(MERGE_PAGE_SIZE);
+      setSpecimens(resolved.specimens);
+
+      if (resolved.mode === "merge") {
+        setPathTraitA(resolved.traitA);
+        setPathTraitB(resolved.traitB);
+        setPathTarget(resolved.target);
+        setPathStart(null);
+        setWaypoints([]);
+      } else {
+        setPathStart(resolved.start);
+        setPathTarget(resolved.target);
+        setWaypoints(resolved.waypoints);
+        setPathTraitA(null);
+        setPathTraitB(null);
+      }
+
+      if (resolved.importedPlan) {
+        setSessionPlan(resolved.importedPlan);
+        setShareBanner(
+          resolved.unresolved.length
+            ? `Opened shared tree — could not resolve: ${resolved.unresolved.join(", ")}`
+            : `Opened shared breeding tree${resolved.specimens.length ? ` with ${resolved.specimens.length} injected pal${resolved.specimens.length === 1 ? "" : "s"}` : ""}. Save it anytime.`,
+        );
+      } else {
+        setSessionPlan(null);
+        if (resolved.unresolved.length) {
+          setShareBanner(
+            `Opened shared plan — could not resolve: ${resolved.unresolved.join(", ")}`,
+          );
+        } else if (resolved.specimens.length) {
+          setShareBanner(
+            `Opened shared plan with ${resolved.specimens.length} injected pal${resolved.specimens.length === 1 ? "" : "s"}.`,
+          );
+        } else {
+          setShareBanner("Opened shared breeding plan from link.");
+        }
+      }
+    };
+
+    applyShareFromLocation();
+    window.addEventListener("hashchange", applyShareFromLocation);
+    return () => window.removeEventListener("hashchange", applyShareFromLocation);
+  }, [dataset]);
 
   function updateTheme(next: ThemeId) {
     setTheme(next);
@@ -453,10 +535,10 @@ export default function App() {
     setPathExcludeTags((prev) => prev.filter((tag) => tag.index !== index));
   }
 
-  const activeSavedPlan = useMemo(
-    () => savedPlans.find((plan) => plan.id === activeSavedPlanId) ?? null,
-    [savedPlans, activeSavedPlanId],
-  );
+  const activeSavedPlan = useMemo(() => {
+    if (sessionPlan) return sessionPlan;
+    return savedPlans.find((plan) => plan.id === activeSavedPlanId) ?? null;
+  }, [sessionPlan, savedPlans, activeSavedPlanId]);
 
   function palByIndex(index: number | undefined): Pal | null {
     if (index == null || !dataset) return null;
@@ -473,6 +555,7 @@ export default function App() {
     const name = window.prompt("Name this breeding plan", suggested);
     if (name == null) return false;
     const trimmed = name.trim() || suggested;
+    const planSpecimens = specimens.length ? specimens : undefined;
     const plan: SavedPathPlan = {
       id: createSavedPathPlanId(),
       name: trimmed,
@@ -486,19 +569,88 @@ export default function App() {
       includeTargetAsParent,
       result: snapshotPathResult(path),
       completedStepKeys: [],
+      specimens: planSpecimens,
+      tree: treeForShare(null, path, planSpecimens),
+      source: planSpecimens?.length ? "share" : "local",
     };
     const next = upsertSavedPathPlan(plan);
     setSavedPlans(next);
+    setSessionPlan(null);
+    setActiveSavedPlanId(plan.id);
+    return true;
+  }
+
+  function saveActivePlan(): boolean {
+    const plan = activeSavedPlan;
+    if (!plan) return false;
+    const name = window.prompt("Name this breeding plan", plan.name);
+    if (name == null) return false;
+    const trimmed = name.trim() || plan.name;
+    const planSpecimens = plan.specimens?.length
+      ? plan.specimens
+      : specimens.length
+        ? specimens
+        : undefined;
+    const toSave: SavedPathPlan = {
+      ...plan,
+      id:
+        plan.source === "share" && plan.id.startsWith("shared-")
+          ? createSavedPathPlanId()
+          : plan.id,
+      name: trimmed,
+      savedAt: Date.now(),
+      specimens: planSpecimens,
+      tree: plan.tree ?? treeForShare(plan, null, planSpecimens),
+      source: plan.source ?? "local",
+    };
+    const next = upsertSavedPathPlan(toSave);
+    setSavedPlans(next);
+    setSessionPlan(null);
+    setActiveSavedPlanId(toSave.id);
+    setSpecimens(toSave.specimens ?? []);
+    setShareBanner(null);
+    return true;
+  }
+
+  function copyShareLink(): boolean {
+    const plan = activeSavedPlan;
+    const tree = treeForShare(plan, null, specimens);
+    const payload = sharePayloadFromPlanner({
+      mode: plan?.plannerMode ?? pathPlannerMode,
+      traitA: plan ? palByIndex(plan.pathTraitA) : pathTraitA,
+      traitB: plan ? palByIndex(plan.pathTraitB) : pathTraitB,
+      start: plan ? palByIndex(plan.pathStart) : pathStart,
+      target: plan ? palByIndex(plan.pathTarget) : pathTarget,
+      waypoints: plan
+        ? (plan.waypoints ?? [])
+            .map((i) => palByIndex(i))
+            .filter((p): p is Pal => p != null)
+        : waypoints,
+      includeTargetAsParent: plan
+        ? Boolean(plan.includeTargetAsParent)
+        : includeTargetAsParent,
+      specimens: plan?.specimens?.length ? plan.specimens : specimens,
+      tree,
+      name: plan?.name,
+    });
+    if (!payload) {
+      window.alert("Pick a complete path setup before copying a share link.");
+      return false;
+    }
+    const url = buildViewUrl(payload);
+    void navigator.clipboard.writeText(url);
     return true;
   }
 
   function openSavedPlan(plan: SavedPathPlan) {
+    setSessionPlan(null);
     setMode("path");
     setPathPlannerMode(plan.plannerMode);
     setIncludeTargetAsParent(Boolean(plan.includeTargetAsParent));
     setPathPairTags([]);
     setPathExcludeTags([]);
     setPathVisibleCount(MERGE_PAGE_SIZE);
+    setSpecimens(plan.specimens ?? []);
 
     if (plan.plannerMode === "chain") {
       setPathStart(palByIndex(plan.pathStart));
@@ -521,13 +673,26 @@ export default function App() {
     setActiveSavedPlanId(plan.id);
   }
 
+  function clearActivePlanView() {
+    setActiveSavedPlanId(null);
+    setSessionPlan(null);
+  }
+
   function removeSavedPlan(id: string) {
     const next = deleteSavedPathPlan(id);
     setSavedPlans(next);
     if (activeSavedPlanId === id) setActiveSavedPlanId(null);
+    if (sessionPlan?.id === id) setSessionPlan(null);
   }
 
   function toggleSavedStep(stepKey: string, completed: boolean) {
+    if (sessionPlan) {
+      const keys = new Set(sessionPlan.completedStepKeys);
+      if (completed) keys.add(stepKey);
+      else keys.delete(stepKey);
+      setSessionPlan({ ...sessionPlan, completedStepKeys: [...keys] });
+      return;
+    }
     if (!activeSavedPlanId) return;
     const plan = savedPlans.find((p) => p.id === activeSavedPlanId);
     if (!plan) return;
@@ -878,8 +1043,16 @@ export default function App() {
                 }
                 activeSavedPlan={activeSavedPlan}
                 onSavePath={savePathPlan}
+                onSaveActivePlan={saveActivePlan}
+                onCopyShareLink={copyShareLink}
                 onToggleSavedStep={toggleSavedStep}
-                onClearActiveSavedPlan={() => setActiveSavedPlanId(null)}
+                onClearActiveSavedPlan={clearActivePlanView}
+                specimens={specimens}
+                shareBanner={shareBanner}
+                onDismissShareBanner={() => setShareBanner(null)}
+                resolveSpecimenPal={(species) =>
+                  dataset ? resolvePalName(dataset, species) : null
+                }
                 ownedResult={ownedResult}
                 browsePals={browsePals}
                 owned={ownedSet}

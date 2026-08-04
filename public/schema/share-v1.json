@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pal-trait-calculator.vercel.app/schema/share-v1.json",
+  "title": "Pal Trait Calculator share + specimen + tree payload v1",
+  "description": "Payload for #share=… links and /api/v1/path/* viewUrl. Prefer `tree` when Chester already computed the step table.",
+  "type": "object",
+  "required": ["v", "mode", "t"],
+  "properties": {
+    "v": { "const": 1 },
+    "mode": { "enum": ["merge", "chain"] },
+    "name": { "type": "string", "description": "Optional plan title" },
+    "a": { "type": "string" },
+    "b": { "type": "string" },
+    "t": { "type": "string" },
+    "s": { "type": "string" },
+    "w": { "type": "array", "items": { "type": "string" } },
+    "itp": { "type": "boolean" },
+    "specimens": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/specimen" }
+    },
+    "tree": { "$ref": "#/$defs/tree" }
+  },
+  "$defs": {
+    "passive": {
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": { "type": "string" },
+            "rank": {
+              "oneOf": [
+                { "enum": ["rainbow"] },
+                { "type": "integer", "minimum": -3, "maximum": 3 }
+              ]
+            },
+            "description": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "treePal": {
+      "oneOf": [
+        { "type": "string", "description": "Species name only" },
+        {
+          "type": "object",
+          "required": ["species"],
+          "properties": {
+            "species": { "type": "string" },
+            "internalName": { "type": "string" },
+            "nickname": { "type": "string" },
+            "gender": { "enum": ["male", "female", "unknown"] },
+            "level": { "type": "number" },
+            "passives": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/passive" }
+            },
+            "specimenId": { "type": "string" },
+            "owner": { "type": "string" },
+            "where": { "type": "string" },
+            "guild": { "type": "string" },
+            "alpha": { "type": "boolean" },
+            "stars": { "type": "number" },
+            "element": { "type": "string" },
+            "ivs": { "type": "object" },
+            "stats": { "type": "object" }
+          }
+        }
+      ]
+    },
+    "treeStep": {
+      "type": "object",
+      "required": ["from", "partner", "child"],
+      "properties": {
+        "from": { "$ref": "#/$defs/treePal" },
+        "partner": { "$ref": "#/$defs/treePal" },
+        "child": { "$ref": "#/$defs/treePal" },
+        "role": {
+          "enum": ["chain", "branch-a", "branch-b", "merge", "finish"]
+        },
+        "pool": { "oneOf": [{ "type": "string" }, { "type": "number" }] },
+        "note": { "type": "string" }
+      }
+    },
+    "tree": {
+      "type": "object",
+      "required": ["steps"],
+      "properties": {
+        "kind": { "enum": ["chain", "merge"] },
+        "summary": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/treeStep" }
+        },
+        "merge": {
+          "type": "object",
+          "properties": {
+            "left": { "$ref": "#/$defs/treePal" },
+            "right": { "$ref": "#/$defs/treePal" },
+            "child": { "$ref": "#/$defs/treePal" }
+          }
+        }
+      }
+    },
+    "specimen": {
+      "type": "object",
+      "required": ["species"],
+      "properties": {
+        "id": { "type": "string" },
+        "species": { "type": "string" },
+        "internalName": { "type": "string" },
+        "nickname": { "type": "string" },
+        "portraitUrl": { "type": "string" },
+        "owner": { "type": "string" },
+        "where": { "type": "string" },
+        "guild": { "type": "string" },
+        "level": { "type": "number" },
+        "gender": { "enum": ["male", "female", "unknown"] },
+        "rank": { "type": "number" },
+        "stars": { "type": "number" },
+        "alpha": { "type": "boolean" },
+        "element": { "type": "string" },
+        "elements": { "type": "array", "items": { "type": "string" } },
+        "passives": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/passive" }
+        },
+        "ivs": { "type": "object" },
+        "stats": { "type": "object" },
+        "role": { "type": "string" }
+      }
+    }
+  }
+}

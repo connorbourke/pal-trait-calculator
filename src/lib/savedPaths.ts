@@ -1,4 +1,9 @@
 import type { PathResult, PathStep } from "./path";
+import type { ShareTreeV1 } from "./shareTree";
+import {
+  normalizeSpecimens,
+  type SpecimenV1,
+} from "./specimens";
 
 const SAVED_PATHS_KEY = "pal-trait-calculator.savedPaths";
 const MAX_SAVED_PATHS = 20;
@@ -14,6 +19,10 @@ export type SavedPathStep = {
   partner: SavedPalRef;
   child: SavedPalRef;
   role?: PathStep["role"];
+  /** Chester pool column, e.g. "3, clean" */
+  pool?: string | number;
+  /** Freeform step note */
+  note?: string;
 };
 
 export type SavedPathPlan = {
@@ -40,6 +49,12 @@ export type SavedPathPlan = {
     };
   };
   completedStepKeys: string[];
+  /** Injected instance cards (Chester / share links). */
+  specimens?: SpecimenV1[];
+  /** Exact breeding tree from share (genders, passives, pool). */
+  tree?: ShareTreeV1;
+  /** Where the plan came from. */
+  source?: "local" | "share";
 };
 
 export function pathStepKey(step: {
@@ -66,6 +81,8 @@ export function snapshotPathResult(path: PathResult): SavedPathPlan["result"] {
       partner: palRef(step.partner),
       child: palRef(step.child),
       role: step.role,
+      pool: step.pool,
+      note: step.note,
     })),
     merge: path.merge
       ? {
@@ -113,6 +130,8 @@ export function pathResultFromSnapshot(
       partner: toPal(step.partner),
       child: toPal(step.child),
       role: step.role,
+      pool: step.pool,
+      note: step.note,
     })),
     merge: result.merge
       ? {
@@ -166,7 +185,17 @@ export function loadSavedPathPlans(): SavedPathPlan[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isSavedPathPlan);
+    return parsed.filter(isSavedPathPlan).map((plan) => ({
+      ...plan,
+      specimens: normalizeSpecimens(plan.specimens),
+      tree:
+        plan.tree &&
+        Array.isArray(plan.tree.steps) &&
+        plan.tree.steps.length > 0
+          ? plan.tree
+          : undefined,
+      source: plan.source === "share" ? "share" : plan.source ?? "local",
+    }));
   } catch {
     return [];
   }

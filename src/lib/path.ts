@@ -9,6 +9,10 @@ export interface PathStep {
   child: Pal;
   /** Why this step exists in the plan */
   role?: "chain" | "branch-a" | "branch-b" | "merge" | "finish";
+  /** Chester pool column when imported from a shared tree */
+  pool?: string | number;
+  /** Freeform step note when imported from a shared tree */
+  note?: string;
 }
 
 export interface PathResult {

@@ -40,6 +40,24 @@ npm run dev
 npm run build
 ```
 
+## API (v1)
+
+Serverless routes under `/api/v1/*` for Chester’s harness and share links.
+
+| Endpoint | Auth | Notes |
+| --- | --- | --- |
+| `GET /api/v1/health` | none | Service + limit metadata |
+| `GET /api/v1/pals?q=` | rate-limited | Pal search |
+| `POST /api/v1/path/merge` | API key + rate limit | Merge trees |
+| `POST /api/v1/path/chain` | API key + rate limit | Chain routes |
+| `POST /api/v1/share` | API key + rate limit | Build `viewUrl` from a payload/`tree` |
+
+**Auth:** `Authorization: Bearer <PAL_API_KEY>` or `x-api-key: <PAL_API_KEY>`.
+
+**Env (Vercel):** see `.env.example` — set `PAL_API_KEY`, and ideally `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` for durable rate limits. Without Upstash, limits fall back to per-isolate memory (weaker on serverless).
+
+Share payload schema: `/schema/share-v1.json`.
+
 ## Disclaimer
 
 Fan-made tool, not affiliated with Pocketpair. Breeding data derived from palcalc (MIT) game-file extraction.
