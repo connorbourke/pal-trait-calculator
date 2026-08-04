@@ -22,6 +22,7 @@ import {
   findChainCandidates,
   findMergeCandidates,
   multiPalBreeder,
+  sortPathResultsByFeasibility,
   type MergeCandidate,
   type PathResult,
 } from "./lib/path";
@@ -381,8 +382,12 @@ export default function App() {
   }, [dataset, mode, parentA, parentB, filterOptions]);
 
   const pathOptions = useMemo(
-    () => ({ ...filterOptions, includeTargetAsParent }),
-    [filterOptions, includeTargetAsParent],
+    () => ({
+      ...filterOptions,
+      includeTargetAsParent,
+      owned: ownedSet,
+    }),
+    [filterOptions, includeTargetAsParent, ownedSet],
   );
 
   const mergeCandidates = useMemo((): MergeCandidate[] => {
@@ -474,18 +479,26 @@ export default function App() {
 
   const mergePaths = useMemo((): PathResult[] => {
     if (!dataset || !pathTraitA || !pathTraitB || !pathTarget) return [];
-    return filteredMergeCandidates
-      .slice(0, pathVisibleCount)
-      .map((candidate) =>
-        buildMergeTree(
-          dataset,
-          pathTraitA.index,
-          pathTraitB.index,
-          pathTarget.index,
-          candidate,
-          pathOptions,
-        ),
-      );
+    // Build a wider tip-sorted pool, then re-rank by full-tree feasibility
+    // so finish-path partners (e.g. late-area pals) affect ordering.
+    const poolSize = Math.min(
+      filteredMergeCandidates.length,
+      Math.max(100, pathVisibleCount * 10),
+    );
+    const built = filteredMergeCandidates.slice(0, poolSize).map((candidate) =>
+      buildMergeTree(
+        dataset,
+        pathTraitA.index,
+        pathTraitB.index,
+        pathTarget.index,
+        candidate,
+        pathOptions,
+      ),
+    );
+    return sortPathResultsByFeasibility(built, ownedSet).slice(
+      0,
+      pathVisibleCount,
+    );
   }, [
     dataset,
     pathTraitA,
@@ -494,6 +507,7 @@ export default function App() {
     filteredMergeCandidates,
     pathVisibleCount,
     pathOptions,
+    ownedSet,
   ]);
 
   const chainCandidates = useMemo((): PathResult[] => {

@@ -31,7 +31,223 @@ export interface PathResult {
 
 export type PathOptions = PalFilterOptions & {
   includeTargetAsParent?: boolean;
+  /** Owned Pal indexes — preferred when choosing equal-distance partners. */
+  owned?: Set<number>;
 };
+
+/**
+ * Floor for pals with no wild level band (raid eggs, exclusives, etc.).
+ * Must sit above any min-weighted wild score (wild max is ~80).
+ */
+const NO_WILD_ACQUISITION_FLOOR = 90;
+
+/**
+ * Wild-band catch level for feasibility ranking.
+ * Min-weighted midpoint: players usually meet a species while exploring
+ * near the early end of its spawn band, not only at max or via a lone alpha.
+ */
+export function wildCatchLevel(pal: Pal): number | null {
+  const min = pal.minWildLevel;
+  const max = pal.maxWildLevel;
+  if (min != null && max != null) {
+    return Math.round(0.65 * min + 0.35 * max);
+  }
+  if (max != null) return max;
+  if (min != null) return min;
+  return null;
+}
+
+/**
+ * Best single-number “how late to obtain?” level from wild spawns.
+ * Field/sealed alpha levels are kept on the pal for reference but do not
+ * drive this score (one fixed boss is a worse model of typical acquisition).
+ */
+export function palAcquisitionLevel(pal: Pal): number | null {
+  return wildCatchLevel(pal);
+}
+
+export function hasWildSpawnBand(pal: Pal): boolean {
+  return pal.minWildLevel != null || pal.maxWildLevel != null;
+}
+
+/**
+ * Rough “how late in the game is this Pal to obtain?” score.
+ * Prefer wild catch level when known. No wild band → raid/exclusive floor.
+ *
+ * World Tree habitat bump applies to locked *and* breedable species when
+ * scored as partners (path ranking only looks at partners, not children).
+ */
+export function palAcquisitionCost(pal: Pal): number {
+  const worldTreeBump =
+    pal.isWorldTreeLocked || pal.isWorldTreeBreedable ? 25 : 0;
+  const level = palAcquisitionLevel(pal);
+  if (level != null) {
+    return level + worldTreeBump;
+  }
+  return (
+    NO_WILD_ACQUISITION_FLOOR +
+    pal.rarity +
+    worldTreeBump
+  );
+}
+
+export type AcquisitionStats = {
+  max: number;
+  avg: number;
+  sum: number;
+  count: number;
+  hardest: Pal | null;
+};
+
+export function acquisitionStats(pals: Pal[]): AcquisitionStats {
+  if (pals.length === 0) {
+    return { max: 0, avg: 0, sum: 0, count: 0, hardest: null };
+  }
+
+  let max = -1;
+  let sum = 0;
+  let hardest: Pal | null = null;
+  for (const pal of pals) {
+    const cost = palAcquisitionCost(pal);
+    sum += cost;
+    if (
+      cost > max ||
+      (cost === max && hardest != null && pal.index < hardest.index)
+    ) {
+      max = cost;
+      hardest = pal;
+    }
+  }
+
+  return {
+    max,
+    avg: sum / pals.length,
+    sum,
+    count: pals.length,
+    hardest,
+  };
+}
+
+/** Partners you must supply along a rebuilt path (not start/target themselves). */
+export function pathPartnerAcquisitionStats(path: PathResult): AcquisitionStats {
+  return acquisitionStats(path.steps.map((step) => step.partner));
+}
+
+export type PathFeasibilityStats = AcquisitionStats & {
+  /** Partners not present in owned (0 when owned is empty/unused). */
+  missingOwned: number;
+  ownedPartners: number;
+};
+
+export function pathFeasibilityStats(
+  path: PathResult,
+  owned?: Set<number> | null,
+): PathFeasibilityStats {
+  const partners = path.steps.map((step) => step.partner);
+  const base = acquisitionStats(partners);
+  if (!owned || owned.size === 0) {
+    return { ...base, missingOwned: 0, ownedPartners: 0 };
+  }
+  let ownedPartners = 0;
+  for (const partner of partners) {
+    if (owned.has(partner.index)) ownedPartners += 1;
+  }
+  return {
+    ...base,
+    ownedPartners,
+    missingOwned: partners.length - ownedPartners,
+  };
+}
+
+function compareAcquisitionStats(a: AcquisitionStats, b: AcquisitionStats): number {
+  if (a.max !== b.max) return a.max - b.max;
+  if (a.avg !== b.avg) return a.avg - b.avg;
+  return 0;
+}
+
+/** Prefer owned, then overworld-catchable, then cheaper acquisition, then rarity / index. */
+function comparePartnerPreference(
+  a: Pal,
+  b: Pal,
+  options: PathOptions,
+): number {
+  const owned = options.owned;
+  if (owned && owned.size > 0) {
+    const aOwned = owned.has(a.index) ? 0 : 1;
+    const bOwned = owned.has(b.index) ? 0 : 1;
+    if (aOwned !== bOwned) return aOwned - bOwned;
+  }
+  const aWild = hasWildSpawnBand(a) ? 0 : 1;
+  const bWild = hasWildSpawnBand(b) ? 0 : 1;
+  if (aWild !== bWild) return aWild - bWild;
+  // Prefer non–World Tree habitat as a new parent (children aren't scored).
+  const aWt = a.isWorldTreeLocked || a.isWorldTreeBreedable ? 1 : 0;
+  const bWt = b.isWorldTreeLocked || b.isWorldTreeBreedable ? 1 : 0;
+  if (aWt !== bWt) return aWt - bWt;
+  const costDiff = palAcquisitionCost(a) - palAcquisitionCost(b);
+  if (costDiff !== 0) return costDiff;
+  if (a.rarity !== b.rarity) return a.rarity - b.rarity;
+  return a.index - b.index;
+}
+
+/**
+ * Sort rebuilt paths: fewest breeds, then fewer missing owned partners,
+ * then max/avg acquisition cost, then rarity.
+ */
+export function comparePathResultsByFeasibility(
+  a: PathResult,
+  b: PathResult,
+  owned?: Set<number> | null,
+): number {
+  if (a.totalBreeds !== b.totalBreeds) return a.totalBreeds - b.totalBreeds;
+  if (a.unreachable !== b.unreachable) return a.unreachable ? 1 : -1;
+
+  const fa = pathFeasibilityStats(a, owned);
+  const fb = pathFeasibilityStats(b, owned);
+  if (owned && owned.size > 0 && fa.missingOwned !== fb.missingOwned) {
+    return fa.missingOwned - fb.missingOwned;
+  }
+  const acq = compareAcquisitionStats(fa, fb);
+  if (acq !== 0) return acq;
+
+  const rarityA = a.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
+  const rarityB = b.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
+  if (rarityA !== rarityB) return rarityA - rarityB;
+  return 0;
+}
+
+export function sortPathResultsByFeasibility(
+  paths: PathResult[],
+  owned?: Set<number> | null,
+): PathResult[] {
+  return [...paths].sort((a, b) => comparePathResultsByFeasibility(a, b, owned));
+}
+
+/** Quiet one-liner for path cards explaining feasibility ranking. */
+export function formatAcquisitionHint(
+  stats: AcquisitionStats,
+  feasibility?: Pick<PathFeasibilityStats, "missingOwned" | "ownedPartners"> | null,
+): string | null {
+  if (feasibility && feasibility.ownedPartners + feasibility.missingOwned > 0) {
+    const total = feasibility.ownedPartners + feasibility.missingOwned;
+    if (feasibility.missingOwned === 0) {
+      return `All ${total} partner${total === 1 ? "" : "s"} already owned`;
+    }
+    if (feasibility.ownedPartners > 0) {
+      return `Uses ${feasibility.ownedPartners} owned · needs ${feasibility.missingOwned} more`;
+    }
+  }
+  if (!stats.hardest || stats.count === 0) return null;
+  const hardest = stats.hardest;
+  const level = palAcquisitionLevel(hardest);
+  if (level != null) {
+    return `Hardest catch ~Lv ${level} (${hardest.name})`;
+  }
+  if (!hasWildSpawnBand(hardest)) {
+    return `Hardest acquire: ${hardest.name} (no wild spawn)`;
+  }
+  return `Hardest acquire: ${hardest.name} (${hardest.difficulty})`;
+}
 
 /**
  * Reconstruct a shortest breeding chain from `start` toward `target`
@@ -70,7 +286,6 @@ export function findShortestPath(
   for (let guard = 0; guard < distance + 5 && current !== targetIndex; guard++) {
     const remaining = dataset.minSteps[current][targetIndex];
     let best: PathStep | null = null;
-    let bestPartnerRarity = Infinity;
 
     for (const partner of partners) {
       const child = findChild(dataset, current, partner.index);
@@ -80,20 +295,35 @@ export function findShortestPath(
       const nextRemaining = dataset.minSteps[child.index][targetIndex];
       if (!(nextRemaining < remaining)) continue;
 
-      const better =
-        !best ||
-        nextRemaining < dataset.minSteps[best.child.index][targetIndex] ||
-        (nextRemaining === dataset.minSteps[best.child.index][targetIndex] &&
-          partner.rarity < bestPartnerRarity);
-
-      if (better) {
+      if (!best) {
         best = {
           from: dataset.pals[current],
           partner,
           child,
           role,
         };
-        bestPartnerRarity = partner.rarity;
+        continue;
+      }
+
+      const bestRemaining = dataset.minSteps[best.child.index][targetIndex];
+      if (nextRemaining < bestRemaining) {
+        best = {
+          from: dataset.pals[current],
+          partner,
+          child,
+          role,
+        };
+        continue;
+      }
+      if (nextRemaining > bestRemaining) continue;
+
+      if (comparePartnerPreference(partner, best.partner, options) < 0) {
+        best = {
+          from: dataset.pals[current],
+          partner,
+          child,
+          role,
+        };
       }
     }
 
@@ -258,13 +488,9 @@ export function findChainCandidates(
     });
   }
 
-  results.sort((a, b) => {
-    if (a.totalBreeds !== b.totalBreeds) return a.totalBreeds - b.totalBreeds;
-    const rarityA = a.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
-    const rarityB = b.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
-    if (rarityA !== rarityB) return rarityA - rarityB;
-    return 0;
-  });
+  results.sort((a, b) =>
+    comparePathResultsByFeasibility(a, b, options.owned ?? null),
+  );
 
   return results;
 }
@@ -359,11 +585,9 @@ function enumerateNearShortestSegmentPaths(
     nextSteps.sort((a, b) => {
       const distA = dataset.minSteps[a.child.index][targetIndex];
       const distB = dataset.minSteps[b.child.index][targetIndex];
-      // Prefer steps that stay closer to optimal, then lower rarity
+      // Prefer steps that stay closer to optimal, then feasible partners
       if (distA !== distB) return distA - distB;
-      return (
-        a.partner.rarity - b.partner.rarity || a.partner.index - b.partner.index
-      );
+      return comparePartnerPreference(a.partner, b.partner, options);
     });
 
     for (const step of nextSteps) {
@@ -453,6 +677,24 @@ export function findMergeCandidates(
 
   return [...byKey.values()].sort((a, b) => {
     if (a.total !== b.total) return a.total - b.total;
+
+    const palsFor = (candidate: MergeCandidate): Pal[] => {
+      const pals: Pal[] = [
+        dataset.pals[candidate.left],
+        dataset.pals[candidate.right],
+      ];
+      if (candidate.merge !== targetIndex) {
+        pals.push(dataset.pals[candidate.merge]);
+      }
+      return pals.filter(Boolean);
+    };
+
+    const acq = compareAcquisitionStats(
+      acquisitionStats(palsFor(a)),
+      acquisitionStats(palsFor(b)),
+    );
+    if (acq !== 0) return acq;
+
     const rarityA =
       dataset.pals[a.left].rarity + dataset.pals[a.right].rarity;
     const rarityB =

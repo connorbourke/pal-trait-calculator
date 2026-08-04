@@ -1,0 +1,721 @@
+{
+  "source": "https://www.palworld.tools/bosses",
+  "fetchedAt": "2026-08-04T21:17:32.969Z",
+  "note": "Field (non-tower) alpha boss spawns from game FieldBoss data, via palworld.tools. Multiple map spots for one species keep the lowest level.",
+  "count": 89,
+  "alphas": [
+    {
+      "name": "Chillet",
+      "slug": "chillet",
+      "minLevel": 11,
+      "levels": [
+        11
+      ]
+    },
+    {
+      "name": "Gumoss",
+      "slug": "gumoss",
+      "minLevel": 11,
+      "levels": [
+        11
+      ]
+    },
+    {
+      "name": "Sweepa",
+      "slug": "sweepa",
+      "minLevel": 11,
+      "levels": [
+        11
+      ]
+    },
+    {
+      "name": "Dumud",
+      "slug": "dumud",
+      "minLevel": 14,
+      "levels": [
+        14
+      ]
+    },
+    {
+      "name": "Arsox",
+      "slug": "arsox",
+      "minLevel": 15,
+      "levels": [
+        15
+      ]
+    },
+    {
+      "name": "Foxcicle",
+      "slug": "foxcicle",
+      "minLevel": 15,
+      "levels": [
+        15
+      ]
+    },
+    {
+      "name": "Foxparks Cryst",
+      "slug": "foxparks-cryst",
+      "minLevel": 15,
+      "levels": [
+        15
+      ]
+    },
+    {
+      "name": "Penking",
+      "slug": "penking",
+      "minLevel": 15,
+      "levels": [
+        15
+      ]
+    },
+    {
+      "name": "Grintale",
+      "slug": "grintale",
+      "minLevel": 17,
+      "levels": [
+        17
+      ]
+    },
+    {
+      "name": "Nitewing",
+      "slug": "nitewing",
+      "minLevel": 18,
+      "levels": [
+        18
+      ]
+    },
+    {
+      "name": "Broncherry",
+      "slug": "broncherry",
+      "minLevel": 23,
+      "levels": [
+        23
+      ]
+    },
+    {
+      "name": "Caprity Noct",
+      "slug": "caprity-noct",
+      "minLevel": 23,
+      "levels": [
+        23
+      ]
+    },
+    {
+      "name": "Kingpaca",
+      "slug": "kingpaca",
+      "minLevel": 23,
+      "levels": [
+        23
+      ]
+    },
+    {
+      "name": "Bushi",
+      "slug": "bushi",
+      "minLevel": 25,
+      "levels": [
+        25
+      ]
+    },
+    {
+      "name": "Fenglope",
+      "slug": "fenglope",
+      "minLevel": 25,
+      "levels": [
+        25
+      ]
+    },
+    {
+      "name": "Vaelet",
+      "slug": "vaelet",
+      "minLevel": 27,
+      "levels": [
+        27
+      ]
+    },
+    {
+      "name": "Wixen",
+      "slug": "wixen",
+      "minLevel": 28,
+      "levels": [
+        28
+      ]
+    },
+    {
+      "name": "Blazehowl",
+      "slug": "blazehowl",
+      "minLevel": 30,
+      "levels": [
+        30
+      ]
+    },
+    {
+      "name": "Elphidran",
+      "slug": "elphidran",
+      "minLevel": 30,
+      "levels": [
+        30
+      ]
+    },
+    {
+      "name": "Grizzbolt",
+      "slug": "grizzbolt",
+      "minLevel": 30,
+      "levels": [
+        30
+      ]
+    },
+    {
+      "name": "Mossanda Lux",
+      "slug": "mossanda-lux",
+      "minLevel": 31,
+      "levels": [
+        31
+      ]
+    },
+    {
+      "name": "Univolt",
+      "slug": "univolt",
+      "minLevel": 31,
+      "levels": [
+        31
+      ]
+    },
+    {
+      "name": "Lunaris",
+      "slug": "lunaris",
+      "minLevel": 35,
+      "levels": [
+        35
+      ]
+    },
+    {
+      "name": "Tarantriss",
+      "slug": "tarantriss",
+      "minLevel": 35,
+      "levels": [
+        35
+      ]
+    },
+    {
+      "name": "Verdash",
+      "slug": "verdash",
+      "minLevel": 35,
+      "levels": [
+        35
+      ]
+    },
+    {
+      "name": "Beakon",
+      "slug": "beakon",
+      "minLevel": 37,
+      "levels": [
+        37
+      ]
+    },
+    {
+      "name": "Mammorest",
+      "slug": "mammorest",
+      "minLevel": 38,
+      "levels": [
+        38
+      ]
+    },
+    {
+      "name": "Wumpo Botan",
+      "slug": "wumpo-botan",
+      "minLevel": 38,
+      "levels": [
+        38
+      ]
+    },
+    {
+      "name": "Elizabee",
+      "slug": "elizabee",
+      "minLevel": 39,
+      "levels": [
+        39
+      ]
+    },
+    {
+      "name": "Azurobe",
+      "slug": "azurobe",
+      "minLevel": 40,
+      "levels": [
+        40
+      ]
+    },
+    {
+      "name": "Needoll",
+      "slug": "needoll",
+      "minLevel": 40,
+      "levels": [
+        40
+      ]
+    },
+    {
+      "name": "Sibelyx",
+      "slug": "sibelyx",
+      "minLevel": 40,
+      "levels": [
+        40
+      ]
+    },
+    {
+      "name": "Menasting",
+      "slug": "menasting",
+      "minLevel": 44,
+      "levels": [
+        44
+      ]
+    },
+    {
+      "name": "Suzaku",
+      "slug": "suzaku",
+      "minLevel": 45,
+      "levels": [
+        45
+      ]
+    },
+    {
+      "name": "Kingpaca Cryst",
+      "slug": "kingpaca-cryst",
+      "minLevel": 46,
+      "levels": [
+        46
+      ]
+    },
+    {
+      "name": "Dinossom Lux",
+      "slug": "dinossom-lux",
+      "minLevel": 47,
+      "levels": [
+        47
+      ]
+    },
+    {
+      "name": "Pierdon",
+      "slug": "pierdon",
+      "minLevel": 50,
+      "levels": [
+        50
+      ]
+    },
+    {
+      "name": "Reptyro",
+      "slug": "reptyro",
+      "minLevel": 50,
+      "levels": [
+        50
+      ]
+    },
+    {
+      "name": "Blazamut",
+      "slug": "blazamut",
+      "minLevel": 52,
+      "levels": [
+        52
+      ]
+    },
+    {
+      "name": "Anubis",
+      "slug": "anubis",
+      "minLevel": 55,
+      "levels": [
+        55
+      ]
+    },
+    {
+      "name": "Astegon",
+      "slug": "astegon",
+      "minLevel": 55,
+      "levels": [
+        55
+      ]
+    },
+    {
+      "name": "Dualith",
+      "slug": "dualith",
+      "minLevel": 55,
+      "levels": [
+        55,
+        75
+      ]
+    },
+    {
+      "name": "Jormuntide",
+      "slug": "jormuntide",
+      "minLevel": 55,
+      "levels": [
+        55
+      ]
+    },
+    {
+      "name": "Knocklem",
+      "slug": "knocklem",
+      "minLevel": 55,
+      "levels": [
+        55
+      ]
+    },
+    {
+      "name": "Menasting Terra",
+      "slug": "menasting-terra",
+      "minLevel": 55,
+      "levels": [
+        55
+      ]
+    },
+    {
+      "name": "Tetroise",
+      "slug": "tetroise",
+      "minLevel": 55,
+      "levels": [
+        55
+      ]
+    },
+    {
+      "name": "Whalaska",
+      "slug": "whalaska",
+      "minLevel": 55,
+      "levels": [
+        55
+      ]
+    },
+    {
+      "name": "Lyleen",
+      "slug": "lyleen",
+      "minLevel": 58,
+      "levels": [
+        58
+      ]
+    },
+    {
+      "name": "Lyleen Noct",
+      "slug": "lyleen-noct",
+      "minLevel": 58,
+      "levels": [
+        58
+      ]
+    },
+    {
+      "name": "Dazzi Noct",
+      "slug": "dazzi-noct",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Fenglope Lux",
+      "slug": "fenglope-lux",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Frostallion",
+      "slug": "frostallion",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Neptilius",
+      "slug": "neptilius",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Nitemary",
+      "slug": "nitemary",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Nyafia",
+      "slug": "nyafia",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Omascul",
+      "slug": "omascul",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Paladius",
+      "slug": "paladius",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Smokie",
+      "slug": "smokie",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Tetroise Primo",
+      "slug": "tetroise-primo",
+      "minLevel": 60,
+      "levels": [
+        60
+      ]
+    },
+    {
+      "name": "Cryolinx Terra",
+      "slug": "cryolinx-terra",
+      "minLevel": 62,
+      "levels": [
+        62
+      ]
+    },
+    {
+      "name": "Silvegis",
+      "slug": "silvegis",
+      "minLevel": 62,
+      "levels": [
+        62
+      ]
+    },
+    {
+      "name": "Gildane",
+      "slug": "gildane",
+      "minLevel": 63,
+      "levels": [
+        63
+      ]
+    },
+    {
+      "name": "Prunelia",
+      "slug": "prunelia",
+      "minLevel": 63,
+      "levels": [
+        63
+      ]
+    },
+    {
+      "name": "Starryon",
+      "slug": "starryon",
+      "minLevel": 63,
+      "levels": [
+        63
+      ]
+    },
+    {
+      "name": "Warsect Terra",
+      "slug": "warsect-terra",
+      "minLevel": 64,
+      "levels": [
+        64
+      ]
+    },
+    {
+      "name": "Celesdir",
+      "slug": "celesdir",
+      "minLevel": 65,
+      "levels": [
+        65
+      ]
+    },
+    {
+      "name": "Frostallion Noct",
+      "slug": "frostallion-noct",
+      "minLevel": 65,
+      "levels": [
+        65
+      ]
+    },
+    {
+      "name": "Kitsun Noct",
+      "slug": "kitsun-noct",
+      "minLevel": 65,
+      "levels": [
+        65
+      ]
+    },
+    {
+      "name": "Snock",
+      "slug": "snock",
+      "minLevel": 65,
+      "levels": [
+        65
+      ]
+    },
+    {
+      "name": "Splatterina",
+      "slug": "splatterina",
+      "minLevel": 65,
+      "levels": [
+        65
+      ]
+    },
+    {
+      "name": "Azurmane",
+      "slug": "azurmane",
+      "minLevel": 66,
+      "levels": [
+        66
+      ]
+    },
+    {
+      "name": "Faleris Aqua",
+      "slug": "faleris-aqua",
+      "minLevel": 66,
+      "levels": [
+        66
+      ]
+    },
+    {
+      "name": "Loupmoon Cryst",
+      "slug": "loupmoon-cryst",
+      "minLevel": 66,
+      "levels": [
+        66
+      ]
+    },
+    {
+      "name": "Slowatt",
+      "slug": "slowatt",
+      "minLevel": 66,
+      "levels": [
+        66
+      ]
+    },
+    {
+      "name": "Wistella",
+      "slug": "wistella",
+      "minLevel": 66,
+      "levels": [
+        66
+      ]
+    },
+    {
+      "name": "Dynamoff",
+      "slug": "dynamoff",
+      "minLevel": 67,
+      "levels": [
+        67
+      ]
+    },
+    {
+      "name": "Flaracle",
+      "slug": "flaracle",
+      "minLevel": 68,
+      "levels": [
+        68
+      ]
+    },
+    {
+      "name": "Eidrolon",
+      "slug": "eidrolon",
+      "minLevel": 69,
+      "levels": [
+        69
+      ]
+    },
+    {
+      "name": "Ophydia",
+      "slug": "ophydia",
+      "minLevel": 69,
+      "levels": [
+        69
+      ]
+    },
+    {
+      "name": "Dualith Noct",
+      "slug": "dualith-noct",
+      "minLevel": 70,
+      "levels": [
+        70
+      ]
+    },
+    {
+      "name": "Jetragon",
+      "slug": "jetragon",
+      "minLevel": 70,
+      "levels": [
+        70
+      ]
+    },
+    {
+      "name": "Moldron",
+      "slug": "moldron",
+      "minLevel": 70,
+      "levels": [
+        70
+      ]
+    },
+    {
+      "name": "Prixter Lux",
+      "slug": "prixter-lux",
+      "minLevel": 70,
+      "levels": [
+        70
+      ]
+    },
+    {
+      "name": "Whalaska Ignis",
+      "slug": "whalaska-ignis",
+      "minLevel": 74,
+      "levels": [
+        74
+      ]
+    },
+    {
+      "name": "Moldron Cryst",
+      "slug": "moldron-cryst",
+      "minLevel": 78,
+      "levels": [
+        78
+      ]
+    },
+    {
+      "name": "Mycora",
+      "slug": "mycora",
+      "minLevel": 78,
+      "levels": [
+        78
+      ]
+    },
+    {
+      "name": "Renjishi",
+      "slug": "renjishi",
+      "minLevel": 78,
+      "levels": [
+        78
+      ]
+    },
+    {
+      "name": "Aegidron",
+      "slug": "aegidron",
+      "minLevel": 79,
+      "levels": [
+        79
+      ]
+    },
+    {
+      "name": "Celesdir Noct",
+      "slug": "celesdir-noct",
+      "minLevel": 79,
+      "levels": [
+        79
+      ]
+    }
+  ]
+}

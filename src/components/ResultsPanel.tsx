@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Mode, Pal } from "../lib/types";
 import type { ParentPair } from "../lib/breeding";
-import type { OwnedBreedResult, PathResult, PathStep } from "../lib/path";
+import {
+  formatAcquisitionHint,
+  pathFeasibilityStats,
+  pathPartnerAcquisitionStats,
+  type OwnedBreedResult,
+  type PathResult,
+  type PathStep,
+} from "../lib/path";
 import {
   pathResultFromSnapshot,
   pathStepKey,
@@ -386,6 +393,7 @@ function PathResults({
   shareBanner,
   onDismissShareBanner,
   resolveSpecimenPal,
+  owned,
 }: Props) {
   if (activeSavedPlan) {
     return (
@@ -460,6 +468,7 @@ function PathResults({
         shareBanner={shareBanner}
         onDismissShareBanner={onDismissShareBanner}
         resolveSpecimenPal={resolveSpecimenPal}
+        owned={owned}
         {...tagProps}
       />
     );
@@ -480,6 +489,7 @@ function PathResults({
       shareBanner={shareBanner}
       onDismissShareBanner={onDismissShareBanner}
       resolveSpecimenPal={resolveSpecimenPal}
+      owned={owned}
       {...tagProps}
     />
   );
@@ -627,6 +637,7 @@ function ChainPathResults({
   shareBanner,
   onDismissShareBanner,
   resolveSpecimenPal,
+  owned,
   ...tagProps
 }: {
   pathStart: Pal | null;
@@ -642,6 +653,7 @@ function ChainPathResults({
   shareBanner: string | null;
   onDismissShareBanner: () => void;
   resolveSpecimenPal?: (species: string) => Pal | null;
+  owned: Set<number>;
 } & PathTagFilterProps) {
   if (
     pathStart &&
@@ -719,7 +731,8 @@ function ChainPathResults({
 
       <p className="quiet">
         Species-level plans sorted by fewest breeds (including routes up to +2
-        breeds) — passives/IVs are not simulated.
+        breeds), then owned coverage, then earlier-game partners — passives/IVs
+        are not simulated.
       </p>
 
       {chainTotalCount === 0 ? (
@@ -734,6 +747,7 @@ function ChainPathResults({
                 index={index}
                 onSavePath={onSavePath}
                 specimens={specimens}
+                owned={owned}
               />
             ))}
           </div>
@@ -767,6 +781,7 @@ function MergePathResults({
   shareBanner,
   onDismissShareBanner,
   resolveSpecimenPal,
+  owned,
   ...tagProps
 }: {
   pathTraitA: Pal | null;
@@ -782,6 +797,7 @@ function MergePathResults({
   shareBanner: string | null;
   onDismissShareBanner: () => void;
   resolveSpecimenPal?: (species: string) => Pal | null;
+  owned: Set<number>;
 } & PathTagFilterProps) {
   if (
     pathTraitA &&
@@ -858,8 +874,8 @@ function MergePathResults({
       <PathPairingTagFilters {...tagProps} />
 
       <p className="quiet">
-        Species-level plans sorted by fewest breeds — passives/IVs are not
-        simulated.
+        Species-level plans sorted by fewest breeds, then owned coverage, then
+        earlier-game partners — passives/IVs are not simulated.
       </p>
 
       {mergeTotalCount === 0 ? (
@@ -874,6 +890,7 @@ function MergePathResults({
                 index={index}
                 onSavePath={onSavePath}
                 specimens={specimens}
+                owned={owned}
               />
             ))}
           </div>
@@ -905,12 +922,20 @@ function ChainRouteCard({
   index,
   onSavePath,
   specimens,
+  owned,
 }: {
   path: PathResult;
   index: number;
   onSavePath: (path: PathResult) => boolean;
   specimens: SpecimenV1[];
+  owned: Set<number>;
 }) {
+  const feasibility = pathFeasibilityStats(path, owned);
+  const acquisitionHint = formatAcquisitionHint(
+    pathPartnerAcquisitionStats(path),
+    owned.size > 0 ? feasibility : null,
+  );
+
   return (
     <article className="merge-tree-card">
       <div className="merge-tree-card-head">
@@ -925,6 +950,9 @@ function ChainRouteCard({
         </div>
       </div>
       {path.summary ? <p className="hint-inline">{path.summary}</p> : null}
+      {acquisitionHint ? (
+        <p className="quiet acquisition-hint">{acquisitionHint}</p>
+      ) : null}
       {path.steps.length === 0 ? (
         <p className="quiet">Already at the target — no breeds needed.</p>
       ) : (
@@ -950,16 +978,23 @@ function MergeTreeCard({
   index,
   onSavePath,
   specimens,
+  owned,
 }: {
   path: PathResult;
   index: number;
   onSavePath: (path: PathResult) => boolean;
   specimens: SpecimenV1[];
+  owned: Set<number>;
 }) {
   const branchA = path.steps.filter((s) => s.role === "branch-a");
   const branchB = path.steps.filter((s) => s.role === "branch-b");
   const mergeSteps = path.steps.filter((s) => s.role === "merge");
   const finishSteps = path.steps.filter((s) => s.role === "finish");
+  const feasibility = pathFeasibilityStats(path, owned);
+  const acquisitionHint = formatAcquisitionHint(
+    pathPartnerAcquisitionStats(path),
+    owned.size > 0 ? feasibility : null,
+  );
 
   return (
     <article className="merge-tree-card">
@@ -983,6 +1018,10 @@ function MergeTreeCard({
           ) : null}
         </div>
       </div>
+
+      {acquisitionHint ? (
+        <p className="quiet acquisition-hint">{acquisitionHint}</p>
+      ) : null}
 
       {path.steps.length === 0 ? (
         <p className="quiet">Already at the target — no breeds needed.</p>

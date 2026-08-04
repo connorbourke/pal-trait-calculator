@@ -112,6 +112,7 @@ export function pathResultFromSnapshot(
       difficulty: "mid" as const,
       minWildLevel: null,
       maxWildLevel: null,
+      minAlphaLevel: null,
       price: null,
       nocturnal: false,
       isTerraria: false,

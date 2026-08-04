@@ -26,6 +26,8 @@ export interface Pal {
   difficulty: Difficulty;
   minWildLevel: number | null;
   maxWildLevel: number | null;
+  /** Earliest field/sealed (non-tower) alpha boss level, if any. */
+  minAlphaLevel: number | null;
   price: number | null;
   nocturnal: boolean;
   isTerraria: boolean;

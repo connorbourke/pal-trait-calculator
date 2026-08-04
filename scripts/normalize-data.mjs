@@ -76,6 +76,38 @@ const WORLD_TREE_HABITAT = new Set([
   "Dandilord",
 ]);
 
+/**
+ * Dump omits or mis-bands Min/MaxWildLevel for fishing-only, raid-egg,
+ * meteor/event, chest-mimic, and some WT pals. Synthetic levels for
+ * acquisition scoring (community sources).
+ *
+ * Fishing / meteor / raid: typical first-acquire level + 10 for RNG / clear lag.
+ */
+const WILD_LEVEL_OVERRIDES = {
+  // Wild on Frostbitten Isle; dump band missing
+  Icelyn: { min: 39, max: 48 },
+  // Fishing — earliest spot + 10
+  "Finsider Ignis": { min: 40, max: 40 }, // Phantom Isle 30–40
+  "Penking Lux": { min: 40, max: 40 }, // Phantom Isle 30–40
+  "Ghangler Ignis": { min: 51, max: 51 }, // Sanctuary 2 41–45
+  // Meteor / space pals — typical encounter + 10 event RNG
+  Xenovader: { min: 40, max: 40 }, // scales with zone; ~30 typical early + 10
+  Xenogard: { min: 65, max: 65 }, // high-level meteors ~55 + 10
+  Selyne: { min: 65, max: 65 }, // Sakurajima meteor / tower ~55 + 10 (dump is WT 76–80)
+  // Chest mimic — wide dump band 5–80; treat as mid + flee RNG
+  Mimog: { min: 40, max: 40 },
+  // Summoning raid / story gate — boss fight level + 10
+  Bellanoir: { min: 40, max: 40 }, // raid Lv 30
+  "Bellanoir Libero": { min: 60, max: 60 }, // raid Lv 50
+  "Blazamut Ryu": { min: 65, max: 65 }, // raid Lv 55
+  Xenolord: { min: 70, max: 70 }, // raid Lv 60
+  Hartalis: { min: 75, max: 75 }, // raid Lv 65
+  Panthalus: { min: 80, max: 80 }, // story Lv 70
+  // World Tree bosses (also WT-locked)
+  Silvance: { min: 78, max: 78 },
+  Dandilord: { min: 78, max: 78 },
+};
+
 function sha256(buf) {
   return createHash("sha256").update(buf).digest("hex");
 }
@@ -134,6 +166,7 @@ function main() {
     difficulty: difficultyTier(p.Rarity ?? 0),
     minWildLevel: p.MinWildLevel ?? null,
     maxWildLevel: p.MaxWildLevel ?? null,
+    minAlphaLevel: null,
     price: p.Price ?? null,
     nocturnal: Boolean(p.Nocturnal),
     isTerraria: isTerraria(p.InternalName),
@@ -141,6 +174,48 @@ function main() {
     isWorldTreeBreedable: false,
     work: workEntries(p.WorkSuitability),
   }));
+
+  let wildOverrideCount = 0;
+  for (const pal of pals) {
+    const override = WILD_LEVEL_OVERRIDES[pal.name];
+    if (!override) continue;
+    pal.minWildLevel = override.min;
+    pal.maxWildLevel = override.max;
+    wildOverrideCount += 1;
+  }
+
+  // Field (non-tower) alpha levels from data/field-alphas.json (palworld.tools scrape).
+  const fieldAlphasPath = join(dataDir, "field-alphas.json");
+  let fieldAlphaMissing = [];
+  if (existsSync(fieldAlphasPath)) {
+    const fieldAlphas = JSON.parse(
+      readFileSync(fieldAlphasPath).toString("utf8"),
+    );
+    const byName = new Map(pals.map((p) => [p.name.toLowerCase(), p]));
+    const bySlug = new Map(
+      pals.map((p) => [
+        p.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
+        p,
+      ]),
+    );
+    for (const alpha of fieldAlphas.alphas ?? []) {
+      const pal =
+        byName.get(String(alpha.name).toLowerCase()) ||
+        bySlug.get(String(alpha.slug).toLowerCase());
+      if (!pal) {
+        fieldAlphaMissing.push(alpha.name ?? alpha.slug);
+        continue;
+      }
+      const level = Number(alpha.minLevel);
+      if (!Number.isFinite(level)) continue;
+      if (pal.minAlphaLevel == null || level < pal.minAlphaLevel) {
+        pal.minAlphaLevel = level;
+      }
+    }
+  }
 
   const byInternal = new Map(pals.map((p) => [p.internalName, p.index]));
   const missing = new Set();
@@ -249,6 +324,8 @@ function main() {
     terrariaCount: pals.filter((p) => p.isTerraria).length,
     worldTreeLockedCount: pals.filter((p) => p.isWorldTreeLocked).length,
     worldTreeBreedableCount: pals.filter((p) => p.isWorldTreeBreedable).length,
+    fieldAlphaSpeciesCount: pals.filter((p) => p.minAlphaLevel != null).length,
+    wildLevelOverrideCount: wildOverrideCount,
     minStepEdgeCount: minSteps.length,
     mutationPassiveCount: mutationPassives.length,
     trending,
@@ -287,8 +364,13 @@ function main() {
   writeFileSync(join(dataDir, "manifest.json"), JSON.stringify(meta, null, 2));
 
   console.log(
-    `Normalized ${pals.length} pals, ${combos.length} combos, ${minSteps.length} step edges (db ${db.Version}); WT locked ${meta.worldTreeLockedCount}, WT breedable ${meta.worldTreeBreedableCount}`,
+    `Normalized ${pals.length} pals, ${combos.length} combos, ${minSteps.length} step edges (db ${db.Version}); WT locked ${meta.worldTreeLockedCount}, WT breedable ${meta.worldTreeBreedableCount}; field alphas ${meta.fieldAlphaSpeciesCount}; wild overrides ${wildOverrideCount}`,
   );
+  if (fieldAlphaMissing.length) {
+    console.warn(
+      `Unmatched field alphas (${fieldAlphaMissing.length}): ${fieldAlphaMissing.join(", ")}`,
+    );
+  }
   if (missing.size) console.warn(`Skipped ${missing.size} unknown combos`);
 }
 

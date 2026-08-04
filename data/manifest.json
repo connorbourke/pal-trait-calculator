@@ -16,6 +16,8 @@
   "terrariaCount": 11,
   "worldTreeLockedCount": 4,
   "worldTreeBreedableCount": 24,
+  "fieldAlphaSpeciesCount": 89,
+  "wildLevelOverrideCount": 16,
   "minStepEdgeCount": 78423,
   "mutationPassiveCount": 4,
   "trending": [
@@ -32,7 +34,7 @@
     "dbSourceSha256": "f9d68b04094a036c02836af93896d3e6461d34a942edd199db9f4793f978f929",
     "breedingSourceSha256": "e0f3a3eeca656ff506f4c1307397cad1bf156680d8c90ca6250ea790f11b38bb"
   },
-  "generatedAt": "2026-08-04T07:13:45.626Z",
+  "generatedAt": "2026-08-04T22:19:24.770Z",
   "gameTarget": {
     "minimum": "Palworld 1.0",
     "preferred": "Palworld 1.0.2",
