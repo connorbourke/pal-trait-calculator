@@ -386,6 +386,9 @@ export default function App() {
       ...filterOptions,
       includeTargetAsParent,
       owned: ownedSet,
+      // Fresh memos per options identity — shared across merge filter + tree builds.
+      pathResultCache: new Map(),
+      partnerPoolCache: new Map(),
     }),
     [filterOptions, includeTargetAsParent, ownedSet],
   );

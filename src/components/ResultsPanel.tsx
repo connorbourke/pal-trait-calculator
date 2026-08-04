@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Mode, Pal } from "../lib/types";
 import type { ParentPair } from "../lib/breeding";
+import { acquisitionStats, formatAcquisitionHint } from "../lib/acquisition";
 import {
-  formatAcquisitionHint,
   pathFeasibilityStats,
   pathPartnerAcquisitionStats,
   type OwnedBreedResult,
@@ -212,14 +212,19 @@ function ParentsResults({ target, pairs, owned }: Props) {
               b: pair.parentB.name,
             });
             const label = `${pair.parentA.name} + ${pair.parentB.name} = ${target.name}`;
+            const acquireHint = formatAcquisitionHint(
+              acquisitionStats([pair.parentA, pair.parentB]),
+            );
             return (
               <li key={pair.comboIndex}>
                 <button
                   type="button"
                   className={`parent-combo-row${bothOwned ? " owned" : ""}`}
                   title={
-                    pair.genderNote
-                      ? `${label} — ${pair.genderNote}`
+                    [pair.genderNote, acquireHint].filter(Boolean).length > 0
+                      ? [label, pair.genderNote, acquireHint]
+                          .filter(Boolean)
+                          .join(" — ")
                       : `${label} (open offspring)`
                   }
                   aria-label={
@@ -250,11 +255,24 @@ function ParentsResults({ target, pairs, owned }: Props) {
                     =
                   </span>
                   <PalPortrait pal={target} size="sm" layout="row" />
-                  {bothOwned ? (
-                    <span className="parent-combo-owned-mark" aria-hidden="true">
-                      ●
-                    </span>
-                  ) : null}
+                  <span className="parent-combo-trail">
+                    {acquireHint ? (
+                      <span
+                        className="parent-combo-acquire quiet"
+                        title={acquireHint}
+                      >
+                        {acquireHint.replace(/^Hardest catch /, "")}
+                      </span>
+                    ) : null}
+                    {bothOwned ? (
+                      <span
+                        className="parent-combo-owned-mark"
+                        aria-hidden="true"
+                      >
+                        ●
+                      </span>
+                    ) : null}
+                  </span>
                 </button>
               </li>
             );

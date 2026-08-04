@@ -8,3 +8,9 @@ curl -fsSL -o "$ROOT/data/db.source.json" \
 curl -fsSL -o "$ROOT/data/breeding.source.json" \
   "https://raw.githubusercontent.com/tylercamp/palcalc/${TAG}/PalCalc.Model/breeding.json"
 echo "Downloaded palcalc ${TAG} dumps into data/"
+
+# Field alpha levels (non-tower) for acquisition scoring metadata
+if command -v node >/dev/null 2>&1; then
+  (cd "$ROOT" && node scripts/fetch-field-alphas.mjs) || \
+    echo "Warning: field-alphas fetch failed; keeping existing data/field-alphas.json if any"
+fi

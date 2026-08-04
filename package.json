@@ -7,6 +7,8 @@
     "data": "node scripts/normalize-data.mjs",
     "data:alphas": "node scripts/fetch-field-alphas.mjs",
     "data:fetch": "bash scripts/fetch-data.sh",
+    "data:refresh": "npm run data:fetch && npm run data",
+    "test": "vitest run",
     "build:api": "node scripts/build-api.mjs",
     "dev": "npm run build:api && vite",
     "build": "npm run data && tsc --noEmit && npm run build:api && vite build",
@@ -28,6 +30,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "esbuild": "^0.25.12",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
   }
 }

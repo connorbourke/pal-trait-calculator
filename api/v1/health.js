@@ -29,6 +29,40 @@ module.exports = __toCommonJS(health_exports);
 var import_promises = require("node:fs/promises");
 var import_node_path = require("node:path");
 
+// src/lib/acquisition.ts
+var NO_WILD_ACQUISITION_FLOOR = 90;
+function wildCatchLevel(pal) {
+  const min = pal.minWildLevel;
+  const max = pal.maxWildLevel;
+  if (min != null && max != null) {
+    return Math.round(0.65 * min + 0.35 * max);
+  }
+  if (max != null) return max;
+  if (min != null) return min;
+  return null;
+}
+function palAcquisitionLevel(pal) {
+  return wildCatchLevel(pal);
+}
+function worldTreeBump(pal) {
+  if (pal.isWorldTreeLocked || pal.isWorldTreeBreedable) return 25;
+  if (pal.acquisitionKind === "worldTree") return 25;
+  return 0;
+}
+function computeAcquisitionCost(pal) {
+  const bump = worldTreeBump(pal);
+  const level = palAcquisitionLevel(pal);
+  if (level != null) {
+    return level + bump;
+  }
+  return NO_WILD_ACQUISITION_FLOOR + pal.rarity + bump;
+}
+function attachAcquisitionCosts(pals) {
+  for (const pal of pals) {
+    pal.acquisitionCost = computeAcquisitionCost(pal);
+  }
+}
+
 // src/lib/breeding.ts
 var UNREACHABLE = 1e4;
 function pairKey(a, b) {
@@ -59,6 +93,12 @@ function assembleDataset(parts) {
   for (const [from, to, steps] of minStepEdges) {
     minSteps[from][to] = steps;
   }
+  for (const pal of pals) {
+    if (!pal.acquisitionKind) {
+      pal.acquisitionKind = pal.isWorldTreeLocked || pal.isWorldTreeBreedable ? "worldTree" : "wild";
+    }
+  }
+  attachAcquisitionCosts(pals);
   return {
     meta,
     pals,

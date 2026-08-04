@@ -1234,11 +1234,28 @@ a {
   line-height: 1;
 }
 
-.parent-combo-owned-mark {
+.parent-combo-trail {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.parent-combo-acquire {
+  font-size: 0.72rem;
+  white-space: nowrap;
+  max-width: 10.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.parent-combo-owned-mark {
   color: var(--accent);
   font-size: 0.65rem;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .parent-combo-list .pal-portrait {

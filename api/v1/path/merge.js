@@ -2071,6 +2071,77 @@ __export(merge_exports, {
 });
 module.exports = __toCommonJS(merge_exports);
 
+// src/lib/acquisition.ts
+var NO_WILD_ACQUISITION_FLOOR = 90;
+function wildCatchLevel(pal) {
+  const min = pal.minWildLevel;
+  const max = pal.maxWildLevel;
+  if (min != null && max != null) {
+    return Math.round(0.65 * min + 0.35 * max);
+  }
+  if (max != null) return max;
+  if (min != null) return min;
+  return null;
+}
+function palAcquisitionLevel(pal) {
+  return wildCatchLevel(pal);
+}
+function hasWildSpawnBand(pal) {
+  return pal.minWildLevel != null || pal.maxWildLevel != null;
+}
+function worldTreeBump(pal) {
+  if (pal.isWorldTreeLocked || pal.isWorldTreeBreedable) return 25;
+  if (pal.acquisitionKind === "worldTree") return 25;
+  return 0;
+}
+function computeAcquisitionCost(pal) {
+  const bump = worldTreeBump(pal);
+  const level = palAcquisitionLevel(pal);
+  if (level != null) {
+    return level + bump;
+  }
+  return NO_WILD_ACQUISITION_FLOOR + pal.rarity + bump;
+}
+function palAcquisitionCost(pal) {
+  if (typeof pal.acquisitionCost === "number") {
+    return pal.acquisitionCost;
+  }
+  return computeAcquisitionCost(pal);
+}
+function attachAcquisitionCosts(pals) {
+  for (const pal of pals) {
+    pal.acquisitionCost = computeAcquisitionCost(pal);
+  }
+}
+function acquisitionStats(pals) {
+  if (pals.length === 0) {
+    return { max: 0, avg: 0, sum: 0, count: 0, hardest: null };
+  }
+  let max = -1;
+  let sum = 0;
+  let hardest = null;
+  for (const pal of pals) {
+    const cost = palAcquisitionCost(pal);
+    sum += cost;
+    if (cost > max || cost === max && hardest != null && pal.index < hardest.index) {
+      max = cost;
+      hardest = pal;
+    }
+  }
+  return {
+    max,
+    avg: sum / pals.length,
+    sum,
+    count: pals.length,
+    hardest
+  };
+}
+function compareAcquisitionStats(a, b) {
+  if (a.max !== b.max) return a.max - b.max;
+  if (a.avg !== b.avg) return a.avg - b.avg;
+  return 0;
+}
+
 // src/lib/breeding.ts
 var UNREACHABLE = 1e4;
 function pairKey(a, b) {
@@ -2101,6 +2172,12 @@ function assembleDataset(parts) {
   for (const [from, to, steps] of minStepEdges) {
     minSteps[from][to] = steps;
   }
+  for (const pal of pals) {
+    if (!pal.acquisitionKind) {
+      pal.acquisitionKind = pal.isWorldTreeLocked || pal.isWorldTreeBreedable ? "worldTree" : "wild";
+    }
+  }
+  attachAcquisitionCosts(pals);
   return {
     meta,
     pals,
@@ -2130,23 +2207,74 @@ function isPalFiltered(pal, options) {
 
 // src/lib/path.ts
 var UNREACHABLE2 = 1e4;
+function pathOptionsFingerprint(options) {
+  const owned = options.owned;
+  const ownedPart = !owned || owned.size === 0 ? "" : [...owned].sort((a, b) => a - b).join(",");
+  return [
+    options.hideTerraria ? "1" : "0",
+    options.hideWorldTreeLocked ? "1" : "0",
+    options.hideWorldTreeBreedable ? "1" : "0",
+    options.includeTargetAsParent ? "1" : "0",
+    ownedPart
+  ].join(":");
+}
+function shortestPathCacheKey(startIndex, targetIndex, role, options) {
+  return `${startIndex}>${targetIndex}:${role ?? "chain"}:${pathOptionsFingerprint(options)}`;
+}
+function partnerPoolCacheKey(targetIndex, options) {
+  return [
+    targetIndex,
+    options.hideTerraria ? "1" : "0",
+    options.hideWorldTreeLocked ? "1" : "0",
+    options.hideWorldTreeBreedable ? "1" : "0",
+    options.includeTargetAsParent ? "1" : "0"
+  ].join(":");
+}
+function comparePartnerPreference(a, b, options) {
+  const owned = options.owned;
+  if (owned && owned.size > 0) {
+    const aOwned = owned.has(a.index) ? 0 : 1;
+    const bOwned = owned.has(b.index) ? 0 : 1;
+    if (aOwned !== bOwned) return aOwned - bOwned;
+  }
+  const aWild = hasWildSpawnBand(a) ? 0 : 1;
+  const bWild = hasWildSpawnBand(b) ? 0 : 1;
+  if (aWild !== bWild) return aWild - bWild;
+  const aWt = a.isWorldTreeLocked || a.isWorldTreeBreedable || a.acquisitionKind === "worldTree" ? 1 : 0;
+  const bWt = b.isWorldTreeLocked || b.isWorldTreeBreedable || b.acquisitionKind === "worldTree" ? 1 : 0;
+  if (aWt !== bWt) return aWt - bWt;
+  const costDiff = palAcquisitionCost(a) - palAcquisitionCost(b);
+  if (costDiff !== 0) return costDiff;
+  if (a.rarity !== b.rarity) return a.rarity - b.rarity;
+  return a.index - b.index;
+}
 function findShortestPath(dataset, startIndex, targetIndex, options = {}, role = "chain") {
+  const cache = options.pathResultCache;
+  const cacheKey = cache ? shortestPathCacheKey(startIndex, targetIndex, role, options) : null;
+  if (cache && cacheKey) {
+    const hit = cache.get(cacheKey);
+    if (hit) return hit;
+  }
+  const store = (result) => {
+    if (cache && cacheKey) cache.set(cacheKey, result);
+    return result;
+  };
   if (startIndex === targetIndex) {
-    return {
+    return store({
       steps: [],
       totalBreeds: 0,
       unreachable: false,
       kind: "chain"
-    };
+    });
   }
   const distance = dataset.minSteps[startIndex]?.[targetIndex] ?? UNREACHABLE2;
   if (distance >= UNREACHABLE2) {
-    return {
+    return store({
       steps: [],
       totalBreeds: distance,
       unreachable: true,
       kind: "chain"
-    };
+    });
   }
   const partners = partnerPool(dataset, targetIndex, options);
   const steps = [];
@@ -2154,41 +2282,58 @@ function findShortestPath(dataset, startIndex, targetIndex, options = {}, role =
   for (let guard = 0; guard < distance + 5 && current !== targetIndex; guard++) {
     const remaining = dataset.minSteps[current][targetIndex];
     let best = null;
-    let bestPartnerRarity = Infinity;
     for (const partner of partners) {
       const child = findChild(dataset, current, partner.index);
       if (!child) continue;
       if (isPalFiltered(child, options)) continue;
       const nextRemaining = dataset.minSteps[child.index][targetIndex];
       if (!(nextRemaining < remaining)) continue;
-      const better = !best || nextRemaining < dataset.minSteps[best.child.index][targetIndex] || nextRemaining === dataset.minSteps[best.child.index][targetIndex] && partner.rarity < bestPartnerRarity;
-      if (better) {
+      if (!best) {
         best = {
           from: dataset.pals[current],
           partner,
           child,
           role
         };
-        bestPartnerRarity = partner.rarity;
+        continue;
+      }
+      const bestRemaining = dataset.minSteps[best.child.index][targetIndex];
+      if (nextRemaining < bestRemaining) {
+        best = {
+          from: dataset.pals[current],
+          partner,
+          child,
+          role
+        };
+        continue;
+      }
+      if (nextRemaining > bestRemaining) continue;
+      if (comparePartnerPreference(partner, best.partner, options) < 0) {
+        best = {
+          from: dataset.pals[current],
+          partner,
+          child,
+          role
+        };
       }
     }
     if (!best) {
-      return {
+      return store({
         steps,
         totalBreeds: distance,
         unreachable: true,
         kind: "chain"
-      };
+      });
     }
     steps.push(best);
     current = best.child.index;
   }
-  return {
+  return store({
     steps,
     totalBreeds: steps.length,
     unreachable: current !== targetIndex,
     kind: "chain"
-  };
+  });
 }
 function findMergeCandidates(dataset, parentAIndex, parentBIndex, targetIndex, options = {}) {
   if (parentAIndex === targetIndex && parentBIndex === targetIndex) {
@@ -2224,6 +2369,21 @@ function findMergeCandidates(dataset, parentAIndex, parentBIndex, targetIndex, o
   }
   return [...byKey.values()].sort((a, b) => {
     if (a.total !== b.total) return a.total - b.total;
+    const palsFor = (candidate) => {
+      const pals = [
+        dataset.pals[candidate.left],
+        dataset.pals[candidate.right]
+      ];
+      if (candidate.merge !== targetIndex) {
+        pals.push(dataset.pals[candidate.merge]);
+      }
+      return pals.filter(Boolean);
+    };
+    const acq = compareAcquisitionStats(
+      acquisitionStats(palsFor(a)),
+      acquisitionStats(palsFor(b))
+    );
+    if (acq !== 0) return acq;
     const rarityA = dataset.pals[a.left].rarity + dataset.pals[a.right].rarity;
     const rarityB = dataset.pals[b.left].rarity + dataset.pals[b.right].rarity;
     if (rarityA !== rarityB) return rarityA - rarityB;
@@ -2299,11 +2459,19 @@ function buildMergeTree(dataset, parentAIndex, parentBIndex, targetIndex, candid
   };
 }
 function partnerPool(dataset, targetIndex, options) {
-  return dataset.pals.filter((p) => {
+  const cache = options.partnerPoolCache;
+  const key = cache ? partnerPoolCacheKey(targetIndex, options) : null;
+  if (cache && key) {
+    const hit = cache.get(key);
+    if (hit) return hit;
+  }
+  const pool = dataset.pals.filter((p) => {
     if (isPalFiltered(p, options)) return false;
     if (!options.includeTargetAsParent && p.index === targetIndex) return false;
     return true;
   });
+  if (cache && key) cache.set(key, pool);
+  return pool;
 }
 
 // src/lib/specimens.ts
@@ -2406,6 +2574,9 @@ function pathResultFromSnapshot(result) {
     difficulty: "mid",
     minWildLevel: null,
     maxWildLevel: null,
+    minAlphaLevel: null,
+    acquisitionKind: "wild",
+    acquisitionCost: 0,
     price: null,
     nocturnal: false,
     isTerraria: false,

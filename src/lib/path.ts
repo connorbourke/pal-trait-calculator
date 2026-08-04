@@ -10,6 +10,8 @@ import type { BreedingDataset, Pal } from "./types";
 
 export {
   acquisitionStats,
+  attachAcquisitionCosts,
+  computeAcquisitionCost,
   formatAcquisitionHint,
   hasWildSpawnBand,
   palAcquisitionCost,
@@ -50,7 +52,54 @@ export type PathOptions = PalFilterOptions & {
   includeTargetAsParent?: boolean;
   /** Owned Pal indexes — preferred when choosing equal-distance partners. */
   owned?: Set<number>;
+  /**
+   * Optional memo for identical shortest-path reconstructions within one
+   * planning pass. Same inputs → same PathResult reference; does not change
+   * ranking or displayed plans.
+   */
+  pathResultCache?: Map<string, PathResult>;
+  /**
+   * Optional memo for partnerPool(target) under the same hide/include filters.
+   */
+  partnerPoolCache?: Map<string, Pal[]>;
 };
+
+function pathOptionsFingerprint(options: PathOptions): string {
+  const owned = options.owned;
+  const ownedPart =
+    !owned || owned.size === 0
+      ? ""
+      : [...owned].sort((a, b) => a - b).join(",");
+  return [
+    options.hideTerraria ? "1" : "0",
+    options.hideWorldTreeLocked ? "1" : "0",
+    options.hideWorldTreeBreedable ? "1" : "0",
+    options.includeTargetAsParent ? "1" : "0",
+    ownedPart,
+  ].join(":");
+}
+
+function shortestPathCacheKey(
+  startIndex: number,
+  targetIndex: number,
+  role: PathStep["role"] | undefined,
+  options: PathOptions,
+): string {
+  return `${startIndex}>${targetIndex}:${role ?? "chain"}:${pathOptionsFingerprint(options)}`;
+}
+
+function partnerPoolCacheKey(
+  targetIndex: number,
+  options: PathOptions,
+): string {
+  return [
+    targetIndex,
+    options.hideTerraria ? "1" : "0",
+    options.hideWorldTreeLocked ? "1" : "0",
+    options.hideWorldTreeBreedable ? "1" : "0",
+    options.includeTargetAsParent ? "1" : "0",
+  ].join(":");
+}
 
 /** Partners you must supply along a rebuilt path (not start/target themselves). */
 export function pathPartnerAcquisitionStats(path: PathResult): AcquisitionStats {
@@ -99,8 +148,14 @@ function comparePartnerPreference(
   const bWild = hasWildSpawnBand(b) ? 0 : 1;
   if (aWild !== bWild) return aWild - bWild;
   // Prefer non–World Tree habitat as a new parent (children aren't scored).
-  const aWt = a.isWorldTreeLocked || a.isWorldTreeBreedable ? 1 : 0;
-  const bWt = b.isWorldTreeLocked || b.isWorldTreeBreedable ? 1 : 0;
+  const aWt =
+    a.isWorldTreeLocked || a.isWorldTreeBreedable || a.acquisitionKind === "worldTree"
+      ? 1
+      : 0;
+  const bWt =
+    b.isWorldTreeLocked || b.isWorldTreeBreedable || b.acquisitionKind === "worldTree"
+      ? 1
+      : 0;
   if (aWt !== bWt) return aWt - bWt;
   const costDiff = palAcquisitionCost(a) - palAcquisitionCost(b);
   if (costDiff !== 0) return costDiff;
@@ -152,23 +207,37 @@ export function findShortestPath(
   options: PathOptions = {},
   role: PathStep["role"] = "chain",
 ): PathResult {
+  const cache = options.pathResultCache;
+  const cacheKey = cache
+    ? shortestPathCacheKey(startIndex, targetIndex, role, options)
+    : null;
+  if (cache && cacheKey) {
+    const hit = cache.get(cacheKey);
+    if (hit) return hit;
+  }
+
+  const store = (result: PathResult): PathResult => {
+    if (cache && cacheKey) cache.set(cacheKey, result);
+    return result;
+  };
+
   if (startIndex === targetIndex) {
-    return {
+    return store({
       steps: [],
       totalBreeds: 0,
       unreachable: false,
       kind: "chain",
-    };
+    });
   }
 
   const distance = dataset.minSteps[startIndex]?.[targetIndex] ?? UNREACHABLE;
   if (distance >= UNREACHABLE) {
-    return {
+    return store({
       steps: [],
       totalBreeds: distance,
       unreachable: true,
       kind: "chain",
-    };
+    });
   }
 
   const partners = partnerPool(dataset, targetIndex, options);
@@ -220,24 +289,24 @@ export function findShortestPath(
     }
 
     if (!best) {
-      return {
+      return store({
         steps,
         totalBreeds: distance,
         unreachable: true,
         kind: "chain",
-      };
+      });
     }
 
     steps.push(best);
     current = best.child.index;
   }
 
-  return {
+  return store({
     steps,
     totalBreeds: steps.length,
     unreachable: current !== targetIndex,
     kind: "chain",
-  };
+  });
 }
 
 /**
@@ -495,8 +564,6 @@ function enumerateNearShortestSegmentPaths(
   dfs(startIndex, 0, [], new Set([startIndex]));
   return out;
 }
-
-/** Scored merge point before path reconstruction. */
 
 /** Scored merge point before path reconstruction. */
 export interface MergeCandidate {
@@ -967,11 +1034,21 @@ function partnerPool(
   targetIndex: number,
   options: PathOptions,
 ): Pal[] {
-  return dataset.pals.filter((p) => {
+  const cache = options.partnerPoolCache;
+  const key = cache ? partnerPoolCacheKey(targetIndex, options) : null;
+  if (cache && key) {
+    const hit = cache.get(key);
+    if (hit) return hit;
+  }
+
+  const pool = dataset.pals.filter((p) => {
     if (isPalFiltered(p, options)) return false;
     if (!options.includeTargetAsParent && p.index === targetIndex) return false;
     return true;
   });
+
+  if (cache && key) cache.set(key, pool);
+  return pool;
 }
 
 export interface OwnedBreedWave {

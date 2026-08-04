@@ -1,4 +1,4 @@
-import type { Pal } from "./types";
+import type { AcquisitionKind, Pal } from "./types";
 
 /**
  * Floor for pals with no wild level band (raid eggs, exclusives, etc.).
@@ -35,21 +35,40 @@ export function hasWildSpawnBand(pal: Pal): boolean {
   return pal.minWildLevel != null || pal.maxWildLevel != null;
 }
 
+function worldTreeBump(pal: Pal): number {
+  if (pal.isWorldTreeLocked || pal.isWorldTreeBreedable) return 25;
+  if (pal.acquisitionKind === "worldTree") return 25;
+  return 0;
+}
+
 /**
- * Rough “how late in the game is this Pal to obtain?” score.
- * Prefer wild catch level when known. No wild band → raid/exclusive floor.
- *
- * World Tree habitat bump applies to locked *and* breedable species when
- * scored as partners / parents to acquire (not as breed results).
+ * Compute acquisition cost from pal fields (ignores any cached acquisitionCost).
  */
-export function palAcquisitionCost(pal: Pal): number {
-  const worldTreeBump =
-    pal.isWorldTreeLocked || pal.isWorldTreeBreedable ? 25 : 0;
+export function computeAcquisitionCost(pal: Pal): number {
+  const bump = worldTreeBump(pal);
   const level = palAcquisitionLevel(pal);
   if (level != null) {
-    return level + worldTreeBump;
+    return level + bump;
   }
-  return NO_WILD_ACQUISITION_FLOOR + pal.rarity + worldTreeBump;
+  return NO_WILD_ACQUISITION_FLOOR + pal.rarity + bump;
+}
+
+/**
+ * Rough “how late in the game is this Pal to obtain?” score.
+ * Uses precomputed `acquisitionCost` when present (set at dataset load).
+ */
+export function palAcquisitionCost(pal: Pal): number {
+  if (typeof pal.acquisitionCost === "number") {
+    return pal.acquisitionCost;
+  }
+  return computeAcquisitionCost(pal);
+}
+
+/** Attach cached acquisitionCost on every pal (mutates in place). */
+export function attachAcquisitionCosts(pals: readonly Pal[]): void {
+  for (const pal of pals) {
+    pal.acquisitionCost = computeAcquisitionCost(pal);
+  }
 }
 
 export type AcquisitionStats = {
@@ -125,4 +144,8 @@ export function formatAcquisitionHint(
     return `Hardest acquire: ${hardest.name} (no wild spawn)`;
   }
   return `Hardest acquire: ${hardest.name} (${hardest.difficulty})`;
+}
+
+export function isWorldTreeAcquisitionKind(kind: AcquisitionKind): boolean {
+  return kind === "worldTree";
 }

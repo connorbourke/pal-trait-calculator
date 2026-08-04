@@ -2071,6 +2071,77 @@ __export(chain_exports, {
 });
 module.exports = __toCommonJS(chain_exports);
 
+// src/lib/acquisition.ts
+var NO_WILD_ACQUISITION_FLOOR = 90;
+function wildCatchLevel(pal) {
+  const min = pal.minWildLevel;
+  const max = pal.maxWildLevel;
+  if (min != null && max != null) {
+    return Math.round(0.65 * min + 0.35 * max);
+  }
+  if (max != null) return max;
+  if (min != null) return min;
+  return null;
+}
+function palAcquisitionLevel(pal) {
+  return wildCatchLevel(pal);
+}
+function hasWildSpawnBand(pal) {
+  return pal.minWildLevel != null || pal.maxWildLevel != null;
+}
+function worldTreeBump(pal) {
+  if (pal.isWorldTreeLocked || pal.isWorldTreeBreedable) return 25;
+  if (pal.acquisitionKind === "worldTree") return 25;
+  return 0;
+}
+function computeAcquisitionCost(pal) {
+  const bump = worldTreeBump(pal);
+  const level = palAcquisitionLevel(pal);
+  if (level != null) {
+    return level + bump;
+  }
+  return NO_WILD_ACQUISITION_FLOOR + pal.rarity + bump;
+}
+function palAcquisitionCost(pal) {
+  if (typeof pal.acquisitionCost === "number") {
+    return pal.acquisitionCost;
+  }
+  return computeAcquisitionCost(pal);
+}
+function attachAcquisitionCosts(pals) {
+  for (const pal of pals) {
+    pal.acquisitionCost = computeAcquisitionCost(pal);
+  }
+}
+function acquisitionStats(pals) {
+  if (pals.length === 0) {
+    return { max: 0, avg: 0, sum: 0, count: 0, hardest: null };
+  }
+  let max = -1;
+  let sum = 0;
+  let hardest = null;
+  for (const pal of pals) {
+    const cost = palAcquisitionCost(pal);
+    sum += cost;
+    if (cost > max || cost === max && hardest != null && pal.index < hardest.index) {
+      max = cost;
+      hardest = pal;
+    }
+  }
+  return {
+    max,
+    avg: sum / pals.length,
+    sum,
+    count: pals.length,
+    hardest
+  };
+}
+function compareAcquisitionStats(a, b) {
+  if (a.max !== b.max) return a.max - b.max;
+  if (a.avg !== b.avg) return a.avg - b.avg;
+  return 0;
+}
+
 // src/lib/breeding.ts
 var UNREACHABLE = 1e4;
 function pairKey(a, b) {
@@ -2101,6 +2172,12 @@ function assembleDataset(parts) {
   for (const [from, to, steps] of minStepEdges) {
     minSteps[from][to] = steps;
   }
+  for (const pal of pals) {
+    if (!pal.acquisitionKind) {
+      pal.acquisitionKind = pal.isWorldTreeLocked || pal.isWorldTreeBreedable ? "worldTree" : "wild";
+    }
+  }
+  attachAcquisitionCosts(pals);
   return {
     meta,
     pals,
@@ -2130,6 +2207,64 @@ function isPalFiltered(pal, options) {
 
 // src/lib/path.ts
 var UNREACHABLE2 = 1e4;
+function partnerPoolCacheKey(targetIndex, options) {
+  return [
+    targetIndex,
+    options.hideTerraria ? "1" : "0",
+    options.hideWorldTreeLocked ? "1" : "0",
+    options.hideWorldTreeBreedable ? "1" : "0",
+    options.includeTargetAsParent ? "1" : "0"
+  ].join(":");
+}
+function pathFeasibilityStats(path, owned) {
+  const partners = path.steps.map((step) => step.partner);
+  const base = acquisitionStats(partners);
+  if (!owned || owned.size === 0) {
+    return { ...base, missingOwned: 0, ownedPartners: 0 };
+  }
+  let ownedPartners = 0;
+  for (const partner of partners) {
+    if (owned.has(partner.index)) ownedPartners += 1;
+  }
+  return {
+    ...base,
+    ownedPartners,
+    missingOwned: partners.length - ownedPartners
+  };
+}
+function comparePartnerPreference(a, b, options) {
+  const owned = options.owned;
+  if (owned && owned.size > 0) {
+    const aOwned = owned.has(a.index) ? 0 : 1;
+    const bOwned = owned.has(b.index) ? 0 : 1;
+    if (aOwned !== bOwned) return aOwned - bOwned;
+  }
+  const aWild = hasWildSpawnBand(a) ? 0 : 1;
+  const bWild = hasWildSpawnBand(b) ? 0 : 1;
+  if (aWild !== bWild) return aWild - bWild;
+  const aWt = a.isWorldTreeLocked || a.isWorldTreeBreedable || a.acquisitionKind === "worldTree" ? 1 : 0;
+  const bWt = b.isWorldTreeLocked || b.isWorldTreeBreedable || b.acquisitionKind === "worldTree" ? 1 : 0;
+  if (aWt !== bWt) return aWt - bWt;
+  const costDiff = palAcquisitionCost(a) - palAcquisitionCost(b);
+  if (costDiff !== 0) return costDiff;
+  if (a.rarity !== b.rarity) return a.rarity - b.rarity;
+  return a.index - b.index;
+}
+function comparePathResultsByFeasibility(a, b, owned) {
+  if (a.totalBreeds !== b.totalBreeds) return a.totalBreeds - b.totalBreeds;
+  if (a.unreachable !== b.unreachable) return a.unreachable ? 1 : -1;
+  const fa = pathFeasibilityStats(a, owned);
+  const fb = pathFeasibilityStats(b, owned);
+  if (owned && owned.size > 0 && fa.missingOwned !== fb.missingOwned) {
+    return fa.missingOwned - fb.missingOwned;
+  }
+  const acq = compareAcquisitionStats(fa, fb);
+  if (acq !== 0) return acq;
+  const rarityA = a.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
+  const rarityB = b.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
+  if (rarityA !== rarityB) return rarityA - rarityB;
+  return 0;
+}
 var MAX_CHAIN_CANDIDATES = 800;
 var MAX_SEGMENT_PATHS = 120;
 var CHAIN_LENGTH_SLACK = 2;
@@ -2207,13 +2342,9 @@ function findChainCandidates(dataset, startIndex, waypointIndexes, targetIndex, 
       summary
     });
   }
-  results.sort((a, b) => {
-    if (a.totalBreeds !== b.totalBreeds) return a.totalBreeds - b.totalBreeds;
-    const rarityA = a.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
-    const rarityB = b.steps.reduce((sum, s) => sum + s.partner.rarity, 0);
-    if (rarityA !== rarityB) return rarityA - rarityB;
-    return 0;
-  });
+  results.sort(
+    (a, b) => comparePathResultsByFeasibility(a, b, options.owned ?? null)
+  );
   return results;
 }
 function enumerateNearShortestSegmentPaths(dataset, startIndex, targetIndex, options, role, maxPaths, slack) {
@@ -2255,7 +2386,7 @@ function enumerateNearShortestSegmentPaths(dataset, startIndex, targetIndex, opt
       const distA = dataset.minSteps[a.child.index][targetIndex];
       const distB = dataset.minSteps[b.child.index][targetIndex];
       if (distA !== distB) return distA - distB;
-      return a.partner.rarity - b.partner.rarity || a.partner.index - b.partner.index;
+      return comparePartnerPreference(a.partner, b.partner, options);
     });
     for (const step of nextSteps) {
       acc.push(step);
@@ -2270,11 +2401,19 @@ function enumerateNearShortestSegmentPaths(dataset, startIndex, targetIndex, opt
   return out;
 }
 function partnerPool(dataset, targetIndex, options) {
-  return dataset.pals.filter((p) => {
+  const cache = options.partnerPoolCache;
+  const key = cache ? partnerPoolCacheKey(targetIndex, options) : null;
+  if (cache && key) {
+    const hit = cache.get(key);
+    if (hit) return hit;
+  }
+  const pool = dataset.pals.filter((p) => {
     if (isPalFiltered(p, options)) return false;
     if (!options.includeTargetAsParent && p.index === targetIndex) return false;
     return true;
   });
+  if (cache && key) cache.set(key, pool);
+  return pool;
 }
 
 // src/lib/specimens.ts
@@ -2377,6 +2516,9 @@ function pathResultFromSnapshot(result) {
     difficulty: "mid",
     minWildLevel: null,
     maxWildLevel: null,
+    minAlphaLevel: null,
+    acquisitionKind: "wild",
+    acquisitionCost: 0,
     price: null,
     nocturnal: false,
     isTerraria: false,

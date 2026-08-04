@@ -1,5 +1,6 @@
 import {
   acquisitionStats,
+  attachAcquisitionCosts,
   compareAcquisitionStats,
   hasWildSpawnBand,
 } from "./acquisition";
@@ -57,6 +58,16 @@ export function assembleDataset(parts: DatasetParts): BreedingDataset {
   for (const [from, to, steps] of minStepEdges) {
     minSteps[from][to] = steps;
   }
+
+  for (const pal of pals) {
+    if (!pal.acquisitionKind) {
+      pal.acquisitionKind =
+        pal.isWorldTreeLocked || pal.isWorldTreeBreedable
+          ? "worldTree"
+          : "wild";
+    }
+  }
+  attachAcquisitionCosts(pals);
 
   return {
     meta,
@@ -193,11 +204,11 @@ export function findParents(
 
     // Prefer pairs whose harder parent is earlier-game (same idea as path partners).
     const xWt =
-      (x.parentA.isWorldTreeLocked || x.parentA.isWorldTreeBreedable ? 1 : 0) +
-      (x.parentB.isWorldTreeLocked || x.parentB.isWorldTreeBreedable ? 1 : 0);
+      (isWtHabitatParent(x.parentA) ? 1 : 0) +
+      (isWtHabitatParent(x.parentB) ? 1 : 0);
     const yWt =
-      (y.parentA.isWorldTreeLocked || y.parentA.isWorldTreeBreedable ? 1 : 0) +
-      (y.parentB.isWorldTreeLocked || y.parentB.isWorldTreeBreedable ? 1 : 0);
+      (isWtHabitatParent(y.parentA) ? 1 : 0) +
+      (isWtHabitatParent(y.parentB) ? 1 : 0);
     if (xWt !== yWt) return xWt - yWt;
 
     const xWild =
@@ -233,6 +244,14 @@ function ownedScore(pair: ParentPair, owned?: Set<number>): number {
   if (a && b) return 0;
   if (a || b) return 1;
   return 2;
+}
+
+function isWtHabitatParent(pal: Pal): boolean {
+  return (
+    pal.isWorldTreeLocked ||
+    pal.isWorldTreeBreedable ||
+    pal.acquisitionKind === "worldTree"
+  );
 }
 
 function genderNoteMap(dataset: BreedingDataset): Map<number, string> {

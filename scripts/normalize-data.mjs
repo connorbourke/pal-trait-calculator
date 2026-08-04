@@ -82,30 +82,31 @@ const WORLD_TREE_HABITAT = new Set([
  * acquisition scoring (community sources).
  *
  * Fishing / meteor / raid: typical first-acquire level + 10 for RNG / clear lag.
+ * `kind` is stored on pals as acquisitionKind for docs + scoring bumps.
  */
 const WILD_LEVEL_OVERRIDES = {
   // Wild on Frostbitten Isle; dump band missing
-  Icelyn: { min: 39, max: 48 },
+  Icelyn: { min: 39, max: 48, kind: "wild" },
   // Fishing — earliest spot + 10
-  "Finsider Ignis": { min: 40, max: 40 }, // Phantom Isle 30–40
-  "Penking Lux": { min: 40, max: 40 }, // Phantom Isle 30–40
-  "Ghangler Ignis": { min: 51, max: 51 }, // Sanctuary 2 41–45
+  "Finsider Ignis": { min: 40, max: 40, kind: "fishing" },
+  "Penking Lux": { min: 40, max: 40, kind: "fishing" },
+  "Ghangler Ignis": { min: 51, max: 51, kind: "fishing" },
   // Meteor / space pals — typical encounter + 10 event RNG
-  Xenovader: { min: 40, max: 40 }, // scales with zone; ~30 typical early + 10
-  Xenogard: { min: 65, max: 65 }, // high-level meteors ~55 + 10
-  Selyne: { min: 65, max: 65 }, // Sakurajima meteor / tower ~55 + 10 (dump is WT 76–80)
+  Xenovader: { min: 40, max: 40, kind: "meteor" },
+  Xenogard: { min: 65, max: 65, kind: "meteor" },
+  Selyne: { min: 65, max: 65, kind: "meteor" },
   // Chest mimic — wide dump band 5–80; treat as mid + flee RNG
-  Mimog: { min: 40, max: 40 },
+  Mimog: { min: 40, max: 40, kind: "chest" },
   // Summoning raid / story gate — boss fight level + 10
-  Bellanoir: { min: 40, max: 40 }, // raid Lv 30
-  "Bellanoir Libero": { min: 60, max: 60 }, // raid Lv 50
-  "Blazamut Ryu": { min: 65, max: 65 }, // raid Lv 55
-  Xenolord: { min: 70, max: 70 }, // raid Lv 60
-  Hartalis: { min: 75, max: 75 }, // raid Lv 65
-  Panthalus: { min: 80, max: 80 }, // story Lv 70
+  Bellanoir: { min: 40, max: 40, kind: "raid" },
+  "Bellanoir Libero": { min: 60, max: 60, kind: "raid" },
+  "Blazamut Ryu": { min: 65, max: 65, kind: "raid" },
+  Xenolord: { min: 70, max: 70, kind: "raid" },
+  Hartalis: { min: 75, max: 75, kind: "raid" },
+  Panthalus: { min: 80, max: 80, kind: "raid" },
   // World Tree bosses (also WT-locked)
-  Silvance: { min: 78, max: 78 },
-  Dandilord: { min: 78, max: 78 },
+  Silvance: { min: 78, max: 78, kind: "worldTree" },
+  Dandilord: { min: 78, max: 78, kind: "worldTree" },
 };
 
 function sha256(buf) {
@@ -167,6 +168,7 @@ function main() {
     minWildLevel: p.MinWildLevel ?? null,
     maxWildLevel: p.MaxWildLevel ?? null,
     minAlphaLevel: null,
+    acquisitionKind: "wild",
     price: p.Price ?? null,
     nocturnal: Boolean(p.Nocturnal),
     isTerraria: isTerraria(p.InternalName),
@@ -181,6 +183,7 @@ function main() {
     if (!override) continue;
     pal.minWildLevel = override.min;
     pal.maxWildLevel = override.max;
+    pal.acquisitionKind = override.kind;
     wildOverrideCount += 1;
   }
 
@@ -283,6 +286,14 @@ function main() {
   for (const index of wtIndices) {
     if (reachable.has(index)) pals[index].isWorldTreeBreedable = true;
     else pals[index].isWorldTreeLocked = true;
+  }
+  for (const pal of pals) {
+    if (
+      (pal.isWorldTreeLocked || pal.isWorldTreeBreedable) &&
+      pal.acquisitionKind === "wild"
+    ) {
+      pal.acquisitionKind = "worldTree";
+    }
   }
 
   // Compact min-steps matrix: only finite reachable edges as [from, to, steps]

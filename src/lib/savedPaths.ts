@@ -113,6 +113,8 @@ export function pathResultFromSnapshot(
       minWildLevel: null,
       maxWildLevel: null,
       minAlphaLevel: null,
+      acquisitionKind: "wild" as const,
+      acquisitionCost: 0,
       price: null,
       nocturnal: false,
       isTerraria: false,

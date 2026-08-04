@@ -1,5 +1,14 @@
 export type Difficulty = "early" | "mid" | "late" | "endgame";
 
+/** How this species is typically first acquired (for scoring / docs). */
+export type AcquisitionKind =
+  | "wild"
+  | "fishing"
+  | "raid"
+  | "meteor"
+  | "chest"
+  | "worldTree";
+
 export type Gender = "WILDCARD" | "MALE" | "FEMALE";
 
 export type Mode =
@@ -28,6 +37,16 @@ export interface Pal {
   maxWildLevel: number | null;
   /** Earliest field/sealed (non-tower) alpha boss level, if any. */
   minAlphaLevel: number | null;
+  /**
+   * Typical acquisition channel. Overrides / WT habitat may set non-wild kinds
+   * even when a wild level band is present for scoring.
+   */
+  acquisitionKind: AcquisitionKind;
+  /**
+   * Precomputed at dataset load from wild band + kind/WT bumps.
+   * Optional on incomplete stubs (saved-path snapshots).
+   */
+  acquisitionCost?: number;
   price: number | null;
   nocturnal: boolean;
   isTerraria: boolean;
