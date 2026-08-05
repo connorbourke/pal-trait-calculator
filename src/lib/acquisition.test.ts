@@ -3,6 +3,7 @@ import {
   attachAcquisitionCosts,
   compareAcquisitionStats,
   computeAcquisitionCost,
+  formatAcquisitionHint,
   palAcquisitionCost,
   acquisitionStats,
 } from "./acquisition";
@@ -21,6 +22,7 @@ function stubPal(partial: Partial<Pal> & Pick<Pal, "name" | "index">): Pal {
     difficulty: (partial.difficulty ?? "mid") as Difficulty,
     minWildLevel: partial.minWildLevel ?? null,
     maxWildLevel: partial.maxWildLevel ?? null,
+    typicalWildLevel: partial.typicalWildLevel ?? null,
     minAlphaLevel: partial.minAlphaLevel ?? null,
     acquisitionKind: (partial.acquisitionKind ?? "wild") as AcquisitionKind,
     price: partial.price ?? null,
@@ -34,7 +36,7 @@ function stubPal(partial: Partial<Pal> & Pick<Pal, "name" | "index">): Pal {
 }
 
 describe("acquisition scoring", () => {
-  it("uses min-weighted wild midpoint", () => {
+  it("uses min-weighted wild midpoint when typical is absent", () => {
     const blazamut = stubPal({
       name: "Blazamut",
       index: 1,
@@ -43,6 +45,18 @@ describe("acquisition scoring", () => {
       rarity: 9,
     });
     expect(computeAcquisitionCost(blazamut)).toBe(58);
+  });
+
+  it("prefers typicalWildLevel over dump band midpoint", () => {
+    const frostplume = stubPal({
+      name: "Frostplume",
+      index: 10,
+      minWildLevel: 39,
+      maxWildLevel: 68,
+      typicalWildLevel: 57,
+      rarity: 4,
+    });
+    expect(computeAcquisitionCost(frostplume)).toBe(57);
   });
 
   it("scores curated raid Xenolord above wild Blazamut", () => {
@@ -77,6 +91,33 @@ describe("acquisition scoring", () => {
       acquisitionKind: "meteor",
     });
     expect(computeAcquisitionCost(selyne)).toBe(65);
+  });
+
+  it("bumps wild legendaries by +5, not raid legendaries", () => {
+    const frostallion = stubPal({
+      name: "Frostallion",
+      index: 20,
+      minWildLevel: 60,
+      maxWildLevel: 60,
+      typicalWildLevel: 60,
+      rarity: 20,
+      acquisitionKind: "wild",
+    });
+    const bellanoir = stubPal({
+      name: "Bellanoir",
+      index: 21,
+      minWildLevel: 40,
+      maxWildLevel: 40,
+      typicalWildLevel: 40,
+      rarity: 20,
+      acquisitionKind: "raid",
+    });
+    expect(computeAcquisitionCost(frostallion)).toBe(65);
+    expect(computeAcquisitionCost(bellanoir)).toBe(40);
+    attachAcquisitionCosts([frostallion]);
+    expect(
+      formatAcquisitionHint(acquisitionStats([frostallion])),
+    ).toBe("Hardest catch ~Lv 65 (Frostallion)");
   });
 
   it("bumps World Tree breedable partners", () => {

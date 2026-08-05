@@ -1,0 +1,2754 @@
+{
+  "source": {
+    "project": "Awy64/palworld-atlas-data",
+    "pages": "https://awy64.github.io/palworld-atlas-data/v1",
+    "steamBuildId": "24466863",
+    "generatedAt": "2026-07-30T12:53:58.5681178+00:00",
+    "buildPath": "builds/24466863",
+    "note": "densityField excludes flat Lv80 World Tree shared-pool slots (72 pals, 1/72); densityAll includes them. Normalize nudges dump mid toward densityField only."
+  },
+  "fetchedAt": "2026-08-05T19:23:07.222Z",
+  "palCount": 274,
+  "levels": {
+    "Alpaca": {
+      "typical": 13,
+      "densityField": 13,
+      "densityAll": 13,
+      "min": 5,
+      "max": 17,
+      "fieldWeight": 366,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "AmaterasuWolf": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 36,
+      "min": 34,
+      "max": 38,
+      "fieldWeight": 31,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "AmaterasuWolf_Dark": {
+      "typical": 62,
+      "densityField": 62,
+      "densityAll": 62,
+      "min": 56,
+      "max": 66,
+      "fieldWeight": 386,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Anubis": {
+      "typical": 69,
+      "densityField": 69,
+      "densityAll": 73,
+      "min": 55,
+      "max": 80,
+      "fieldWeight": 37,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "BadCatgirl": {
+      "typical": 57,
+      "densityField": 57,
+      "densityAll": 57,
+      "min": 50,
+      "max": 60,
+      "fieldWeight": 325,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Baphomet": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 35,
+      "min": 30,
+      "max": 40,
+      "fieldWeight": 165,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Baphomet_Dark": {
+      "typical": 38,
+      "densityField": 38,
+      "densityAll": 38,
+      "min": 37,
+      "max": 39,
+      "fieldWeight": 10,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Bastet": {
+      "typical": 10,
+      "densityField": 10,
+      "densityAll": 10,
+      "min": 5,
+      "max": 15,
+      "fieldWeight": 174,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Bastet_Ice": {
+      "typical": 42,
+      "densityField": 42,
+      "densityAll": 42,
+      "min": 39,
+      "max": 45,
+      "fieldWeight": 30,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BerryGoat": {
+      "typical": 18,
+      "densityField": 18,
+      "densityAll": 18,
+      "min": 6,
+      "max": 28,
+      "fieldWeight": 486,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BerryGoat_Dark": {
+      "typical": 54,
+      "densityField": 54,
+      "densityAll": 54,
+      "min": 23,
+      "max": 58,
+      "fieldWeight": 113,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BirdDragon": {
+      "typical": 52,
+      "densityField": 52,
+      "densityAll": 52,
+      "min": 20,
+      "max": 63,
+      "fieldWeight": 561,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BirdDragon_Ice": {
+      "typical": 52,
+      "densityField": 52,
+      "densityAll": 52,
+      "min": 23,
+      "max": 67,
+      "fieldWeight": 281,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BlackCentaur": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 60,
+      "max": 60,
+      "fieldWeight": 1,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BlackGriffon": {
+      "typical": 53,
+      "densityField": 53,
+      "densityAll": 71,
+      "min": 50,
+      "max": 80,
+      "fieldWeight": 11,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "BlackMetalDragon": {
+      "typical": 55,
+      "densityField": 55,
+      "densityAll": 78,
+      "min": 55,
+      "max": 80,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "BlackPuppy": {
+      "typical": 58,
+      "densityField": 58,
+      "densityAll": 58,
+      "min": 50,
+      "max": 66,
+      "fieldWeight": 1731,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BlackPuppy_Ice": {
+      "typical": 63,
+      "densityField": 63,
+      "densityAll": 63,
+      "min": 62,
+      "max": 64,
+      "fieldWeight": 8,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BlueDragon": {
+      "typical": 37,
+      "densityField": 37,
+      "densityAll": 62,
+      "min": 35,
+      "max": 80,
+      "fieldWeight": 15,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "BlueDragon_Ice": {
+      "typical": 55,
+      "densityField": 55,
+      "densityAll": 74,
+      "min": 50,
+      "max": 80,
+      "fieldWeight": 7,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "BluePlatypus": {
+      "typical": 10,
+      "densityField": 10,
+      "densityAll": 10,
+      "min": 6,
+      "max": 14,
+      "fieldWeight": 152,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BluePlatypus_Fire": {
+      "typical": 34,
+      "densityField": 34,
+      "densityAll": 34,
+      "min": 32,
+      "max": 36,
+      "fieldWeight": 34,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BlueThunderHorse": {
+      "typical": 65,
+      "densityField": 65,
+      "densityAll": 67,
+      "min": 63,
+      "max": 80,
+      "fieldWeight": 114,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "BlueberryFairy": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 50,
+      "max": 66,
+      "fieldWeight": 715,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Boar": {
+      "typical": 10,
+      "densityField": 10,
+      "densityAll": 10,
+      "min": 5,
+      "max": 13,
+      "fieldWeight": 243,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "BrownRabbit": {
+      "typical": 65,
+      "densityField": 65,
+      "densityAll": 65,
+      "min": 63,
+      "max": 69,
+      "fieldWeight": 39,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CactusDoll": {
+      "typical": 33,
+      "densityField": 33,
+      "densityAll": 33,
+      "min": 31,
+      "max": 40,
+      "fieldWeight": 368,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CactusDoll_Dark": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 35,
+      "min": 33,
+      "max": 36,
+      "fieldWeight": 325,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CandleGhost": {
+      "typical": 56,
+      "densityField": 56,
+      "densityAll": 56,
+      "min": 45,
+      "max": 67,
+      "fieldWeight": 664,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CaptainPenguin": {
+      "typical": 38,
+      "densityField": 38,
+      "densityAll": 38,
+      "min": 15,
+      "max": 44,
+      "fieldWeight": 136,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Carbunclo": {
+      "typical": 8,
+      "densityField": 8,
+      "densityAll": 8,
+      "min": 1,
+      "max": 14,
+      "fieldWeight": 307,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CatBat": {
+      "typical": 18,
+      "densityField": 18,
+      "densityAll": 18,
+      "min": 10,
+      "max": 45,
+      "fieldWeight": 253,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CatMage": {
+      "typical": 29,
+      "densityField": 29,
+      "densityAll": 29,
+      "min": 20,
+      "max": 46,
+      "fieldWeight": 735,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CatMage_Fire": {
+      "typical": 47,
+      "densityField": 47,
+      "densityAll": 47,
+      "min": 40,
+      "max": 52,
+      "fieldWeight": 30,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CatVampire": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 45,
+      "min": 20,
+      "max": 66,
+      "fieldWeight": 241,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ChickenPal": {
+      "typical": 4,
+      "densityField": 4,
+      "densityAll": 4,
+      "min": 1,
+      "max": 13,
+      "fieldWeight": 369,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ClioneTwins": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 35,
+      "min": 9,
+      "max": 65,
+      "fieldWeight": 66,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CloverFairy": {
+      "typical": 7,
+      "densityField": 7,
+      "densityAll": 7,
+      "min": 3,
+      "max": 13,
+      "fieldWeight": 156,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ClownRabbit": {
+      "typical": 69,
+      "densityField": 69,
+      "densityAll": 69,
+      "min": 55,
+      "max": 74,
+      "fieldWeight": 83,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ColorfulBird": {
+      "typical": 33,
+      "densityField": 33,
+      "densityAll": 33,
+      "min": 14,
+      "max": 47,
+      "fieldWeight": 1068,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CowPal": {
+      "typical": 13,
+      "densityField": 13,
+      "densityAll": 13,
+      "min": 9,
+      "max": 19,
+      "fieldWeight": 171,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CubeTurtle": {
+      "typical": 50,
+      "densityField": 50,
+      "densityAll": 52,
+      "min": 48,
+      "max": 80,
+      "fieldWeight": 327,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "CubeTurtle_Neutral": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 60,
+      "max": 78,
+      "fieldWeight": 42,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CuteButterfly": {
+      "typical": 20,
+      "densityField": 20,
+      "densityAll": 20,
+      "min": 16,
+      "max": 29,
+      "fieldWeight": 391,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CuteFox": {
+      "typical": 7,
+      "densityField": 7,
+      "densityAll": 7,
+      "min": 1,
+      "max": 13,
+      "fieldWeight": 163,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "CuteMole": {
+      "typical": 26,
+      "densityField": 26,
+      "densityAll": 26,
+      "min": 5,
+      "max": 40,
+      "fieldWeight": 599,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "DandelionGirl": {
+      "typical": 65,
+      "densityField": 65,
+      "densityAll": 65,
+      "min": 63,
+      "max": 69,
+      "fieldWeight": 56,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "DarkCrow": {
+      "typical": 31,
+      "densityField": 31,
+      "densityAll": 31,
+      "min": 14,
+      "max": 57,
+      "fieldWeight": 1726,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "DarkFlameFox": {
+      "typical": 65,
+      "densityField": 65,
+      "densityAll": 65,
+      "min": 35,
+      "max": 77,
+      "fieldWeight": 36,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "DarkScorpion": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 35,
+      "min": 31,
+      "max": 44,
+      "fieldWeight": 547,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "DarkScorpion_Ground": {
+      "typical": 51,
+      "densityField": 51,
+      "densityAll": 51,
+      "min": 48,
+      "max": 55,
+      "fieldWeight": 13,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Deer": {
+      "typical": 11,
+      "densityField": 11,
+      "densityAll": 15,
+      "min": 6,
+      "max": 80,
+      "fieldWeight": 322,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Deer_Ground": {
+      "typical": 22,
+      "densityField": 22,
+      "densityAll": 59,
+      "min": 20,
+      "max": 80,
+      "fieldWeight": 12,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "DreamDemon": {
+      "typical": 10,
+      "densityField": 10,
+      "densityAll": 10,
+      "min": 4,
+      "max": 16,
+      "fieldWeight": 289,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "DrillGame": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 35,
+      "min": 17,
+      "max": 44,
+      "fieldWeight": 1042,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Eagle": {
+      "typical": 18,
+      "densityField": 18,
+      "densityAll": 18,
+      "min": 11,
+      "max": 29,
+      "fieldWeight": 609,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ElecCat": {
+      "typical": 11,
+      "densityField": 11,
+      "densityAll": 11,
+      "min": 10,
+      "max": 12,
+      "fieldWeight": 45,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ElecLizard": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 66,
+      "min": 65,
+      "max": 66,
+      "fieldWeight": 66,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ElecPanda": {
+      "typical": 70,
+      "densityField": 70,
+      "densityAll": 72,
+      "min": 30,
+      "max": 80,
+      "fieldWeight": 82,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "ElecPomeranian": {
+      "typical": 40,
+      "densityField": 40,
+      "densityAll": 40,
+      "min": 18,
+      "max": 69,
+      "fieldWeight": 115,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ElecSnail": {
+      "typical": 65,
+      "densityField": 65,
+      "densityAll": 65,
+      "min": 63,
+      "max": 69,
+      "fieldWeight": 37,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FairyDragon": {
+      "typical": 27,
+      "densityField": 27,
+      "densityAll": 31,
+      "min": 20,
+      "max": 80,
+      "fieldWeight": 288,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "FairyDragon_Water": {
+      "typical": 47,
+      "densityField": 47,
+      "densityAll": 56,
+      "min": 33,
+      "max": 80,
+      "fieldWeight": 55,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "FeatherOstrich": {
+      "typical": 37,
+      "densityField": 37,
+      "densityAll": 37,
+      "min": 31,
+      "max": 49,
+      "fieldWeight": 435,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FengyunDeeper": {
+      "typical": 40,
+      "densityField": 40,
+      "densityAll": 57,
+      "min": 25,
+      "max": 80,
+      "fieldWeight": 28,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "FengyunDeeper_Electric": {
+      "typical": 58,
+      "densityField": 58,
+      "densityAll": 59,
+      "min": 57,
+      "max": 80,
+      "fieldWeight": 264,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "FireKirin": {
+      "typical": 34,
+      "densityField": 34,
+      "densityAll": 43,
+      "min": 30,
+      "max": 80,
+      "fieldWeight": 91,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "FireKirin_Dark": {
+      "typical": 37,
+      "densityField": 37,
+      "densityAll": 39,
+      "min": 32,
+      "max": 80,
+      "fieldWeight": 439,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "FlameBambi": {
+      "typical": 8,
+      "densityField": 8,
+      "densityAll": 8,
+      "min": 4,
+      "max": 14,
+      "fieldWeight": 230,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlameBuffalo": {
+      "typical": 21,
+      "densityField": 21,
+      "densityAll": 21,
+      "min": 14,
+      "max": 27,
+      "fieldWeight": 168,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlowerDinosaur": {
+      "typical": 25,
+      "densityField": 25,
+      "densityAll": 25,
+      "min": 10,
+      "max": 34,
+      "fieldWeight": 337,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlowerDinosaur_Electric": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 36,
+      "min": 34,
+      "max": 47,
+      "fieldWeight": 605,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlowerDoll": {
+      "typical": 34,
+      "densityField": 34,
+      "densityAll": 34,
+      "min": 28,
+      "max": 57,
+      "fieldWeight": 106,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlowerRabbit": {
+      "typical": 25,
+      "densityField": 25,
+      "densityAll": 25,
+      "min": 22,
+      "max": 29,
+      "fieldWeight": 206,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FluffyBird": {
+      "typical": 21,
+      "densityField": 21,
+      "densityAll": 21,
+      "min": 15,
+      "max": 65,
+      "fieldWeight": 400,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlyingManta": {
+      "typical": 7,
+      "densityField": 7,
+      "densityAll": 7,
+      "min": 2,
+      "max": 14,
+      "fieldWeight": 261,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlyingManta_Thunder": {
+      "typical": 28,
+      "densityField": 28,
+      "densityAll": 28,
+      "min": 26,
+      "max": 29,
+      "fieldWeight": 130,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FoxExorcist": {
+      "typical": 75,
+      "densityField": 75,
+      "densityAll": 77,
+      "min": 68,
+      "max": 80,
+      "fieldWeight": 28,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "FoxMage": {
+      "typical": 33,
+      "densityField": 33,
+      "densityAll": 33,
+      "min": 23,
+      "max": 38,
+      "fieldWeight": 54,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FoxMage_Dark": {
+      "typical": 49,
+      "densityField": 49,
+      "densityAll": 49,
+      "min": 46,
+      "max": 55,
+      "fieldWeight": 214,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Ganesha": {
+      "typical": 5,
+      "densityField": 5,
+      "densityAll": 5,
+      "min": 2,
+      "max": 13,
+      "fieldWeight": 264,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Garm": {
+      "typical": 11,
+      "densityField": 11,
+      "densityAll": 11,
+      "min": 6,
+      "max": 14,
+      "fieldWeight": 552,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GhostAnglerfish": {
+      "typical": 48,
+      "densityField": 48,
+      "densityAll": 48,
+      "min": 30,
+      "max": 58,
+      "fieldWeight": 127,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GhostBeast": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 45,
+      "min": 38,
+      "max": 59,
+      "fieldWeight": 430,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GhostBlackCat": {
+      "typical": 19,
+      "densityField": 19,
+      "densityAll": 19,
+      "min": 11,
+      "max": 73,
+      "fieldWeight": 181,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GhostDragon": {
+      "typical": 68,
+      "densityField": 68,
+      "densityAll": 79,
+      "min": 65,
+      "max": 80,
+      "fieldWeight": 3,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GhostRabbit": {
+      "typical": 64,
+      "densityField": 64,
+      "densityAll": 64,
+      "min": 50,
+      "max": 67,
+      "fieldWeight": 139,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GhostRabbit_Grass": {
+      "typical": 52,
+      "densityField": 52,
+      "densityAll": 52,
+      "min": 50,
+      "max": 54,
+      "fieldWeight": 13,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GoldenHorse": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 53,
+      "max": 66,
+      "fieldWeight": 386,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Gorilla": {
+      "typical": 28,
+      "densityField": 28,
+      "densityAll": 33,
+      "min": 22,
+      "max": 80,
+      "fieldWeight": 187,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Gorilla_Ground": {
+      "typical": 40,
+      "densityField": 40,
+      "densityAll": 47,
+      "min": 35,
+      "max": 80,
+      "fieldWeight": 97,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GrassGolem": {
+      "typical": 62,
+      "densityField": 62,
+      "densityAll": 66,
+      "min": 46,
+      "max": 80,
+      "fieldWeight": 79,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GrassGolem_Dark": {
+      "typical": 74,
+      "densityField": 74,
+      "densityAll": 74,
+      "min": 70,
+      "max": 77,
+      "fieldWeight": 5,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GrassMammoth": {
+      "typical": 34,
+      "densityField": 34,
+      "densityAll": 35,
+      "min": 26,
+      "max": 80,
+      "fieldWeight": 491,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GrassMammoth_Ice": {
+      "typical": 40,
+      "densityField": 40,
+      "densityAll": 47,
+      "min": 36,
+      "max": 80,
+      "fieldWeight": 105,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GrassMinotaur": {
+      "typical": 25,
+      "densityField": 25,
+      "densityAll": 37,
+      "min": 24,
+      "max": 80,
+      "fieldWeight": 75,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GrassPanda": {
+      "typical": 32,
+      "densityField": 32,
+      "densityAll": 37,
+      "min": 27,
+      "max": 80,
+      "fieldWeight": 164,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GrassPanda_Electric": {
+      "typical": 55,
+      "densityField": 55,
+      "densityAll": 61,
+      "min": 31,
+      "max": 80,
+      "fieldWeight": 72,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GrassRabbitMan": {
+      "typical": 52,
+      "densityField": 52,
+      "densityAll": 52,
+      "min": 35,
+      "max": 53,
+      "fieldWeight": 85,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GrimGirl": {
+      "typical": 61,
+      "densityField": 61,
+      "densityAll": 61,
+      "min": 52,
+      "max": 80,
+      "fieldWeight": 849,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "GuardianDog": {
+      "typical": 51,
+      "densityField": 51,
+      "densityAll": 51,
+      "min": 40,
+      "max": 56,
+      "fieldWeight": 82,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "HadesBird": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 46,
+      "min": 24,
+      "max": 80,
+      "fieldWeight": 1123,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "HadesBird_Electric": {
+      "typical": 48,
+      "densityField": 48,
+      "densityAll": 54,
+      "min": 47,
+      "max": 80,
+      "fieldWeight": 95,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "HawkBird": {
+      "typical": 16,
+      "densityField": 16,
+      "densityAll": 16,
+      "min": 12,
+      "max": 40,
+      "fieldWeight": 258,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Hedgehog": {
+      "typical": 9,
+      "densityField": 9,
+      "densityAll": 9,
+      "min": 4,
+      "max": 13,
+      "fieldWeight": 120,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Hedgehog_Ice": {
+      "typical": 21,
+      "densityField": 21,
+      "densityAll": 21,
+      "min": 10,
+      "max": 24,
+      "fieldWeight": 70,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "HerculesBeetle": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 66,
+      "min": 34,
+      "max": 80,
+      "fieldWeight": 10,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "HerculesBeetle_Ground": {
+      "typical": 57,
+      "densityField": 57,
+      "densityAll": 57,
+      "min": 53,
+      "max": 64,
+      "fieldWeight": 90,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "HoodGhost": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 66,
+      "min": 65,
+      "max": 69,
+      "fieldWeight": 116,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Horus_Water": {
+      "typical": 67,
+      "densityField": 67,
+      "densityAll": 68,
+      "min": 56,
+      "max": 80,
+      "fieldWeight": 229,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "IceCrocodile": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 36,
+      "min": 10,
+      "max": 45,
+      "fieldWeight": 43,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "IceDeer": {
+      "typical": 38,
+      "densityField": 38,
+      "densityAll": 47,
+      "min": 32,
+      "max": 80,
+      "fieldWeight": 77,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "IceFox": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 35,
+      "min": 15,
+      "max": 37,
+      "fieldWeight": 189,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "IceHorse": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 60,
+      "max": 60,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "IceHorse_Dark": {
+      "typical": 65,
+      "densityField": 65,
+      "densityAll": 65,
+      "min": 65,
+      "max": 65,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "IceNarwhal": {
+      "typical": 48,
+      "densityField": 48,
+      "densityAll": 63,
+      "min": 42,
+      "max": 80,
+      "fieldWeight": 24,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "IceSeal": {
+      "typical": 40,
+      "densityField": 40,
+      "densityAll": 40,
+      "min": 33,
+      "max": 45,
+      "fieldWeight": 71,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "IceSeal_Ground": {
+      "typical": 58,
+      "densityField": 58,
+      "densityAll": 58,
+      "min": 55,
+      "max": 60,
+      "fieldWeight": 26,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "IceWitch": {
+      "typical": 44,
+      "densityField": 44,
+      "densityAll": 44,
+      "min": 39,
+      "max": 48,
+      "fieldWeight": 69,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "JellyfishFairy": {
+      "typical": 31,
+      "densityField": 31,
+      "densityAll": 31,
+      "min": 6,
+      "max": 58,
+      "fieldWeight": 243,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "JellyfishGhost": {
+      "typical": 53,
+      "densityField": 53,
+      "densityAll": 53,
+      "min": 14,
+      "max": 63,
+      "fieldWeight": 475,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "JetDragon": {
+      "typical": 70,
+      "densityField": 70,
+      "densityAll": 70,
+      "min": 70,
+      "max": 70,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Kelpie": {
+      "typical": 13,
+      "densityField": 13,
+      "densityAll": 13,
+      "min": 9,
+      "max": 19,
+      "fieldWeight": 189,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Kelpie_Fire": {
+      "typical": 28,
+      "densityField": 28,
+      "densityAll": 28,
+      "min": 20,
+      "max": 38,
+      "fieldWeight": 65,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "KendoFrog": {
+      "typical": 26,
+      "densityField": 26,
+      "densityAll": 26,
+      "min": 4,
+      "max": 49,
+      "fieldWeight": 182,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "KendoFrog_Dark": {
+      "typical": 62,
+      "densityField": 62,
+      "densityAll": 62,
+      "min": 61,
+      "max": 62,
+      "fieldWeight": 449,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "KingAlpaca": {
+      "typical": 23,
+      "densityField": 23,
+      "densityAll": 75,
+      "min": 23,
+      "max": 80,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "KingAlpaca_Ice": {
+      "typical": 46,
+      "densityField": 46,
+      "densityAll": 46,
+      "min": 46,
+      "max": 46,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "KingBahamut": {
+      "typical": 48,
+      "densityField": 48,
+      "densityAll": 65,
+      "min": 46,
+      "max": 80,
+      "fieldWeight": 18,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "KingSunfish": {
+      "typical": 67,
+      "densityField": 67,
+      "densityAll": 67,
+      "min": 66,
+      "max": 67,
+      "fieldWeight": 18,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Kirin": {
+      "typical": 19,
+      "densityField": 19,
+      "densityAll": 29,
+      "min": 14,
+      "max": 80,
+      "fieldWeight": 116,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Kitsunebi": {
+      "typical": 8,
+      "densityField": 8,
+      "densityAll": 8,
+      "min": 5,
+      "max": 13,
+      "fieldWeight": 189,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Kitsunebi_Ice": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 45,
+      "min": 15,
+      "max": 58,
+      "fieldWeight": 105,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LavaGirl": {
+      "typical": 20,
+      "densityField": 20,
+      "densityAll": 20,
+      "min": 4,
+      "max": 38,
+      "fieldWeight": 245,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LazyCatfish": {
+      "typical": 27,
+      "densityField": 27,
+      "densityAll": 27,
+      "min": 14,
+      "max": 39,
+      "fieldWeight": 475,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LazyCatfish_Gold": {
+      "typical": 40,
+      "densityField": 40,
+      "densityAll": 40,
+      "min": 25,
+      "max": 49,
+      "fieldWeight": 182,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LazyDragon": {
+      "typical": 41,
+      "densityField": 41,
+      "densityAll": 55,
+      "min": 30,
+      "max": 80,
+      "fieldWeight": 37,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "LazyDragon_Electric": {
+      "typical": 58,
+      "densityField": 58,
+      "densityAll": 70,
+      "min": 48,
+      "max": 80,
+      "fieldWeight": 16,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "LeafMomonga": {
+      "typical": 18,
+      "densityField": 18,
+      "densityAll": 18,
+      "min": 1,
+      "max": 50,
+      "fieldWeight": 329,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LeafPrincess": {
+      "typical": 50,
+      "densityField": 50,
+      "densityAll": 50,
+      "min": 40,
+      "max": 57,
+      "fieldWeight": 50,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LilyQueen": {
+      "typical": 75,
+      "densityField": 75,
+      "densityAll": 77,
+      "min": 58,
+      "max": 80,
+      "fieldWeight": 44,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "LilyQueen_Dark": {
+      "typical": 75,
+      "densityField": 75,
+      "densityAll": 77,
+      "min": 58,
+      "max": 80,
+      "fieldWeight": 44,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "LittleBriarRose": {
+      "typical": 20,
+      "densityField": 20,
+      "densityAll": 20,
+      "min": 16,
+      "max": 29,
+      "fieldWeight": 379,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LizardMan": {
+      "typical": 32,
+      "densityField": 32,
+      "densityAll": 32,
+      "min": 21,
+      "max": 40,
+      "fieldWeight": 953,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LizardMan_Fire": {
+      "typical": 33,
+      "densityField": 33,
+      "densityAll": 33,
+      "min": 28,
+      "max": 38,
+      "fieldWeight": 110,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LongCat": {
+      "typical": 65,
+      "densityField": 65,
+      "densityAll": 65,
+      "min": 63,
+      "max": 69,
+      "fieldWeight": 34,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LotusDragon": {
+      "typical": 69,
+      "densityField": 69,
+      "densityAll": 79,
+      "min": 69,
+      "max": 80,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Manticore": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 53,
+      "min": 30,
+      "max": 80,
+      "fieldWeight": 73,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Manticore_Dark": {
+      "typical": 46,
+      "densityField": 46,
+      "densityAll": 47,
+      "min": 34,
+      "max": 80,
+      "fieldWeight": 545,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "MimicDog": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 47,
+      "min": 10,
+      "max": 80,
+      "fieldWeight": 5332,
+      "worldTreePoolWeight": 377,
+      "sanctuaryWeight": 377
+    },
+    "Monkey": {
+      "typical": 9,
+      "densityField": 9,
+      "densityAll": 9,
+      "min": 4,
+      "max": 13,
+      "fieldWeight": 263,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Monkey_Fire": {
+      "typical": 11,
+      "densityField": 11,
+      "densityAll": 11,
+      "min": 10,
+      "max": 12,
+      "fieldWeight": 54,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MoonChild": {
+      "typical": 77,
+      "densityField": 77,
+      "densityAll": 77,
+      "min": 66,
+      "max": 78,
+      "fieldWeight": 82,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MopBaby": {
+      "typical": 22,
+      "densityField": 22,
+      "densityAll": 22,
+      "min": 7,
+      "max": 34,
+      "fieldWeight": 184,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MopKing": {
+      "typical": 28,
+      "densityField": 28,
+      "densityAll": 28,
+      "min": 11,
+      "max": 40,
+      "fieldWeight": 130,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MummyPal": {
+      "typical": 42,
+      "densityField": 42,
+      "densityAll": 44,
+      "min": 39,
+      "max": 80,
+      "fieldWeight": 325,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "MushroomDragon": {
+      "typical": 47,
+      "densityField": 47,
+      "densityAll": 47,
+      "min": 39,
+      "max": 77,
+      "fieldWeight": 91,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MushroomDragon_Dark": {
+      "typical": 58,
+      "densityField": 58,
+      "densityAll": 58,
+      "min": 39,
+      "max": 77,
+      "fieldWeight": 220,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Mutant": {
+      "typical": 38,
+      "densityField": 38,
+      "densityAll": 38,
+      "min": 25,
+      "max": 49,
+      "fieldWeight": 110,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MysteryMask": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 51,
+      "max": 66,
+      "fieldWeight": 1671,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "NaughtyCat": {
+      "typical": 30,
+      "densityField": 30,
+      "densityAll": 30,
+      "min": 17,
+      "max": 48,
+      "fieldWeight": 751,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "NegativeKoala": {
+      "typical": 12,
+      "densityField": 12,
+      "densityAll": 12,
+      "min": 4,
+      "max": 24,
+      "fieldWeight": 501,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "NegativeOctopus": {
+      "typical": 38,
+      "densityField": 38,
+      "densityAll": 38,
+      "min": 5,
+      "max": 62,
+      "fieldWeight": 361,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "NegativeOctopus_Neutral": {
+      "typical": 26,
+      "densityField": 26,
+      "densityAll": 26,
+      "min": 24,
+      "max": 44,
+      "fieldWeight": 131,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "NightBlueHorse": {
+      "typical": 56,
+      "densityField": 56,
+      "densityAll": 58,
+      "min": 42,
+      "max": 80,
+      "fieldWeight": 241,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "NightFox": {
+      "typical": 9,
+      "densityField": 9,
+      "densityAll": 9,
+      "min": 4,
+      "max": 19,
+      "fieldWeight": 212,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "OctopusGirl": {
+      "typical": 53,
+      "densityField": 53,
+      "densityAll": 53,
+      "min": 10,
+      "max": 62,
+      "fieldWeight": 320,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "OctopusGirl_Neutral": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 66,
+      "min": 65,
+      "max": 66,
+      "fieldWeight": 14,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "OniGhostGirl": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 66,
+      "min": 65,
+      "max": 69,
+      "fieldWeight": 116,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PandaGirl": {
+      "typical": 42,
+      "densityField": 42,
+      "densityAll": 42,
+      "min": 28,
+      "max": 68,
+      "fieldWeight": 157,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Penguin": {
+      "typical": 14,
+      "densityField": 14,
+      "densityAll": 14,
+      "min": 2,
+      "max": 45,
+      "fieldWeight": 553,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PinkCat": {
+      "typical": 4,
+      "densityField": 4,
+      "densityAll": 4,
+      "min": 1,
+      "max": 13,
+      "fieldWeight": 462,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PinkLizard": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 36,
+      "min": 30,
+      "max": 42,
+      "fieldWeight": 915,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PinkRabbit": {
+      "typical": 12,
+      "densityField": 12,
+      "densityAll": 12,
+      "min": 1,
+      "max": 24,
+      "fieldWeight": 567,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PinkRabbit_Grass": {
+      "typical": 31,
+      "densityField": 31,
+      "densityAll": 31,
+      "min": 18,
+      "max": 58,
+      "fieldWeight": 341,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PlantSlime": {
+      "typical": 7,
+      "densityField": 7,
+      "densityAll": 7,
+      "min": 2,
+      "max": 13,
+      "fieldWeight": 210,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PlantSlime_Flower": {
+      "typical": 3,
+      "densityField": 3,
+      "densityAll": 3,
+      "min": 2,
+      "max": 4,
+      "fieldWeight": 23,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Plesiosaur": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 39,
+      "min": 33,
+      "max": 80,
+      "fieldWeight": 277,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "PoseidonOrca": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 60,
+      "max": 60,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "PurpleSpider": {
+      "typical": 43,
+      "densityField": 43,
+      "densityAll": 43,
+      "min": 20,
+      "max": 58,
+      "fieldWeight": 165,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "QueenBee": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 36,
+      "min": 34,
+      "max": 39,
+      "fieldWeight": 44,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "RaijinDaughter": {
+      "typical": 34,
+      "densityField": 34,
+      "densityAll": 34,
+      "min": 30,
+      "max": 40,
+      "fieldWeight": 201,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "RaijinDaughter_Water": {
+      "typical": 57,
+      "densityField": 57,
+      "densityAll": 57,
+      "min": 50,
+      "max": 66,
+      "fieldWeight": 198,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "RedArmorBird": {
+      "typical": 39,
+      "densityField": 39,
+      "densityAll": 44,
+      "min": 32,
+      "max": 80,
+      "fieldWeight": 165,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "RedFlowerBird": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 66,
+      "min": 63,
+      "max": 69,
+      "fieldWeight": 52,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "RobinHood": {
+      "typical": 28,
+      "densityField": 28,
+      "densityAll": 28,
+      "min": 22,
+      "max": 34,
+      "fieldWeight": 172,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "RobinHood_Ground": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 35,
+      "min": 32,
+      "max": 40,
+      "fieldWeight": 605,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "RockBeast": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 45,
+      "min": 42,
+      "max": 50,
+      "fieldWeight": 18,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "RockBeast_Ice": {
+      "typical": 69,
+      "densityField": 69,
+      "densityAll": 69,
+      "min": 68,
+      "max": 69,
+      "fieldWeight": 50,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Ronin": {
+      "typical": 39,
+      "densityField": 39,
+      "densityAll": 39,
+      "min": 25,
+      "max": 59,
+      "fieldWeight": 1855,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Ronin_Dark": {
+      "typical": 59,
+      "densityField": 59,
+      "densityAll": 59,
+      "min": 46,
+      "max": 67,
+      "fieldWeight": 2038,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SaintCentaur": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 60,
+      "max": 60,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SakuraSaurus": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 38,
+      "min": 23,
+      "max": 80,
+      "fieldWeight": 494,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "SakuraSaurus_Water": {
+      "typical": 53,
+      "densityField": 53,
+      "densityAll": 73,
+      "min": 51,
+      "max": 80,
+      "fieldWeight": 7,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "SamuraiDog": {
+      "typical": 3,
+      "densityField": 3,
+      "densityAll": 3,
+      "min": 2,
+      "max": 4,
+      "fieldWeight": 23,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ScorpionMan": {
+      "typical": 49,
+      "densityField": 49,
+      "densityAll": 49,
+      "min": 48,
+      "max": 49,
+      "fieldWeight": 70,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ScorpionMan_Electric": {
+      "typical": 67,
+      "densityField": 67,
+      "densityAll": 67,
+      "min": 65,
+      "max": 70,
+      "fieldWeight": 37,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Sekhmet": {
+      "typical": 44,
+      "densityField": 44,
+      "densityAll": 46,
+      "min": 37,
+      "max": 80,
+      "fieldWeight": 395,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Serpent": {
+      "typical": 24,
+      "densityField": 24,
+      "densityAll": 24,
+      "min": 12,
+      "max": 35,
+      "fieldWeight": 238,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Serpent_Ground": {
+      "typical": 41,
+      "densityField": 41,
+      "densityAll": 41,
+      "min": 31,
+      "max": 63,
+      "fieldWeight": 504,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SharkKid": {
+      "typical": 24,
+      "densityField": 24,
+      "densityAll": 24,
+      "min": 14,
+      "max": 29,
+      "fieldWeight": 186,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SharkKid_Fire": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 36,
+      "min": 32,
+      "max": 39,
+      "fieldWeight": 104,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SheepBall": {
+      "typical": 4,
+      "densityField": 4,
+      "densityAll": 4,
+      "min": 1,
+      "max": 13,
+      "fieldWeight": 446,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SifuDog": {
+      "typical": 54,
+      "densityField": 54,
+      "densityAll": 54,
+      "min": 51,
+      "max": 56,
+      "fieldWeight": 67,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SkyDragon": {
+      "typical": 57,
+      "densityField": 57,
+      "densityAll": 58,
+      "min": 40,
+      "max": 80,
+      "fieldWeight": 448,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "SkyDragon_Grass": {
+      "typical": 52,
+      "densityField": 52,
+      "densityAll": 59,
+      "min": 45,
+      "max": 80,
+      "fieldWeight": 74,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "SleeveRabbit": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 66,
+      "min": 65,
+      "max": 69,
+      "fieldWeight": 30,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SmallArmadillo": {
+      "typical": 46,
+      "densityField": 46,
+      "densityAll": 46,
+      "min": 40,
+      "max": 49,
+      "fieldWeight": 115,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SmallYeti": {
+      "typical": 33,
+      "densityField": 33,
+      "densityAll": 33,
+      "min": 32,
+      "max": 34,
+      "fieldWeight": 21,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SnowPeafowl": {
+      "typical": 60,
+      "densityField": 60,
+      "densityAll": 60,
+      "min": 39,
+      "max": 68,
+      "fieldWeight": 130,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SoldierBee": {
+      "typical": 27,
+      "densityField": 27,
+      "densityAll": 27,
+      "min": 20,
+      "max": 34,
+      "fieldWeight": 145,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "StuffedShark": {
+      "typical": 34,
+      "densityField": 34,
+      "densityAll": 34,
+      "min": 1,
+      "max": 40,
+      "fieldWeight": 88,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SumoDog": {
+      "typical": 55,
+      "densityField": 55,
+      "densityAll": 55,
+      "min": 53,
+      "max": 56,
+      "fieldWeight": 52,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Suzaku": {
+      "typical": 45,
+      "densityField": 45,
+      "densityAll": 77,
+      "min": 45,
+      "max": 80,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Suzaku_Water": {
+      "typical": 63,
+      "densityField": 63,
+      "densityAll": 67,
+      "min": 42,
+      "max": 80,
+      "fieldWeight": 65,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "SweetsSheep": {
+      "typical": 12,
+      "densityField": 12,
+      "densityAll": 12,
+      "min": 9,
+      "max": 19,
+      "fieldWeight": 148,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SweetsSheep_Ground": {
+      "typical": 58,
+      "densityField": 58,
+      "densityAll": 58,
+      "min": 55,
+      "max": 60,
+      "fieldWeight": 26,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SwordCutlassfish": {
+      "typical": 48,
+      "densityField": 48,
+      "densityAll": 48,
+      "min": 30,
+      "max": 66,
+      "fieldWeight": 38,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SwordCutlassfish_Fire": {
+      "typical": 42,
+      "densityField": 42,
+      "densityAll": 42,
+      "min": 40,
+      "max": 44,
+      "fieldWeight": 16,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "TentacleTurtle": {
+      "typical": 26,
+      "densityField": 26,
+      "densityAll": 26,
+      "min": 5,
+      "max": 39,
+      "fieldWeight": 240,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "TentacleTurtle_Ground": {
+      "typical": 46,
+      "densityField": 46,
+      "densityAll": 46,
+      "min": 40,
+      "max": 48,
+      "fieldWeight": 102,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ThunderBird": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 38,
+      "min": 30,
+      "max": 80,
+      "fieldWeight": 533,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "ThunderDog": {
+      "typical": 43,
+      "densityField": 43,
+      "densityAll": 43,
+      "min": 31,
+      "max": 58,
+      "fieldWeight": 265,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ThunderDog_Ice": {
+      "typical": 55,
+      "densityField": 55,
+      "densityAll": 55,
+      "min": 35,
+      "max": 77,
+      "fieldWeight": 145,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ThunderFluffyBird": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 66,
+      "min": 63,
+      "max": 69,
+      "fieldWeight": 30,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "TropicalOstrich": {
+      "typical": 41,
+      "densityField": 41,
+      "densityAll": 41,
+      "min": 32,
+      "max": 50,
+      "fieldWeight": 72,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Umihebi": {
+      "typical": 55,
+      "densityField": 55,
+      "densityAll": 78,
+      "min": 55,
+      "max": 80,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Umihebi_Fire": {
+      "typical": 67,
+      "densityField": 67,
+      "densityAll": 73,
+      "min": 66,
+      "max": 80,
+      "fieldWeight": 21,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "VenusFlytrap": {
+      "typical": 47,
+      "densityField": 47,
+      "densityAll": 47,
+      "min": 45,
+      "max": 48,
+      "fieldWeight": 11,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "VioletFairy": {
+      "typical": 42,
+      "densityField": 42,
+      "densityAll": 42,
+      "min": 20,
+      "max": 57,
+      "fieldWeight": 34,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "VolcanicMonster": {
+      "typical": 40,
+      "densityField": 40,
+      "densityAll": 40,
+      "min": 36,
+      "max": 50,
+      "fieldWeight": 22,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "VolcanicMonster_Ice": {
+      "typical": 59,
+      "densityField": 59,
+      "densityAll": 59,
+      "min": 42,
+      "max": 67,
+      "fieldWeight": 178,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "VolcanoDragon": {
+      "typical": 46,
+      "densityField": 46,
+      "densityAll": 52,
+      "min": 32,
+      "max": 80,
+      "fieldWeight": 103,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "WeaselDragon": {
+      "typical": 35,
+      "densityField": 35,
+      "densityAll": 41,
+      "min": 11,
+      "max": 80,
+      "fieldWeight": 147,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "WeaselDragon_Fire": {
+      "typical": 52,
+      "densityField": 52,
+      "densityAll": 58,
+      "min": 40,
+      "max": 80,
+      "fieldWeight": 82,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Werewolf": {
+      "typical": 25,
+      "densityField": 25,
+      "densityAll": 25,
+      "min": 14,
+      "max": 38,
+      "fieldWeight": 1298,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Werewolf_Ice": {
+      "typical": 51,
+      "densityField": 51,
+      "densityAll": 51,
+      "min": 40,
+      "max": 66,
+      "fieldWeight": 493,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WhiteDeer": {
+      "typical": 62,
+      "densityField": 62,
+      "densityAll": 62,
+      "min": 54,
+      "max": 80,
+      "fieldWeight": 1634,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "WhiteMoth": {
+      "typical": 39,
+      "densityField": 39,
+      "densityAll": 39,
+      "min": 36,
+      "max": 45,
+      "fieldWeight": 94,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WhiteShieldDragon": {
+      "typical": 62,
+      "densityField": 62,
+      "densityAll": 78,
+      "min": 62,
+      "max": 80,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "WhiteTiger": {
+      "typical": 46,
+      "densityField": 46,
+      "densityAll": 46,
+      "min": 42,
+      "max": 49,
+      "fieldWeight": 53,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WhiteTiger_Ground": {
+      "typical": 62,
+      "densityField": 62,
+      "densityAll": 62,
+      "min": 56,
+      "max": 64,
+      "fieldWeight": 188,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WindChimes": {
+      "typical": 22,
+      "densityField": 22,
+      "densityAll": 22,
+      "min": 9,
+      "max": 40,
+      "fieldWeight": 261,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WindChimes_Ice": {
+      "typical": 36,
+      "densityField": 36,
+      "densityAll": 36,
+      "min": 32,
+      "max": 40,
+      "fieldWeight": 332,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WingGolem": {
+      "typical": 66,
+      "densityField": 66,
+      "densityAll": 72,
+      "min": 55,
+      "max": 80,
+      "fieldWeight": 35,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "WingGolem_Fire": {
+      "typical": 69,
+      "densityField": 69,
+      "densityAll": 69,
+      "min": 65,
+      "max": 73,
+      "fieldWeight": 58,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WizardOwl": {
+      "typical": 12,
+      "densityField": 12,
+      "densityAll": 12,
+      "min": 4,
+      "max": 22,
+      "fieldWeight": 359,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WoolFox": {
+      "typical": 4,
+      "densityField": 4,
+      "densityAll": 4,
+      "min": 1,
+      "max": 13,
+      "fieldWeight": 295,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Yeti": {
+      "typical": 47,
+      "densityField": 47,
+      "densityAll": 55,
+      "min": 42,
+      "max": 80,
+      "fieldWeight": 67,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "Yeti_Grass": {
+      "typical": 54,
+      "densityField": 54,
+      "densityAll": 59,
+      "min": 38,
+      "max": 80,
+      "fieldWeight": 85,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "BlueSkyDragon": {
+      "typical": 77,
+      "densityField": 77,
+      "densityAll": 77,
+      "min": 76,
+      "max": 78,
+      "fieldWeight": 63,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "DomeArmorDragon": {
+      "typical": 79,
+      "densityField": 79,
+      "densityAll": 79,
+      "min": 79,
+      "max": 79,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ElecSnail_Ground": {
+      "typical": 75,
+      "densityField": 75,
+      "densityAll": 75,
+      "min": 74,
+      "max": 76,
+      "fieldWeight": 33,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "FlowerDoll_Fire": {
+      "typical": 72,
+      "densityField": 72,
+      "densityAll": 72,
+      "min": 71,
+      "max": 73,
+      "fieldWeight": 22,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GhostDragon_Fire": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 77,
+      "fieldWeight": 26,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "GrassMinotaur_Ice": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 77,
+      "fieldWeight": 69,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Horus": {
+      "typical": 77,
+      "densityField": 77,
+      "densityAll": 78,
+      "min": 76,
+      "max": 80,
+      "fieldWeight": 47,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "IceNarwhal_Fire": {
+      "typical": 72,
+      "densityField": 72,
+      "densityAll": 76,
+      "min": 71,
+      "max": 80,
+      "fieldWeight": 24,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "KabukiMan": {
+      "typical": 78,
+      "densityField": 78,
+      "densityAll": 80,
+      "min": 78,
+      "max": 80,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "KingSunfish_Thunder": {
+      "typical": 77,
+      "densityField": 77,
+      "densityAll": 77,
+      "min": 76,
+      "max": 78,
+      "fieldWeight": 52,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "Kirin_Ice": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 77,
+      "fieldWeight": 69,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "LanternButler": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 77,
+      "fieldWeight": 42,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MonochromeQueen": {
+      "typical": 77,
+      "densityField": 77,
+      "densityAll": 77,
+      "min": 76,
+      "max": 78,
+      "fieldWeight": 47,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "MoonQueen": {
+      "typical": 77,
+      "densityField": 77,
+      "densityAll": 78,
+      "min": 76,
+      "max": 80,
+      "fieldWeight": 40,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "MushroomLady": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 78,
+      "fieldWeight": 44,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "NightBlueHorse_Neutral": {
+      "typical": 75,
+      "densityField": 75,
+      "densityAll": 75,
+      "min": 74,
+      "max": 76,
+      "fieldWeight": 63,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SnakeGirl": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 77,
+      "fieldWeight": 26,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "SnowTigerBeastman": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 77,
+      "min": 75,
+      "max": 80,
+      "fieldWeight": 69,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "ThiefBird": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 74,
+      "max": 78,
+      "fieldWeight": 80,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ThunderBird_Ice": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 77,
+      "fieldWeight": 69,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "ThunderDragonMan": {
+      "typical": 75,
+      "densityField": 75,
+      "densityAll": 77,
+      "min": 74,
+      "max": 80,
+      "fieldWeight": 33,
+      "worldTreePoolWeight": 21,
+      "sanctuaryWeight": 21
+    },
+    "VolcanoDragon_Ice": {
+      "typical": 78,
+      "densityField": 78,
+      "densityAll": 78,
+      "min": 78,
+      "max": 78,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WhiteDeer_Dark": {
+      "typical": 79,
+      "densityField": 79,
+      "densityAll": 79,
+      "min": 79,
+      "max": 79,
+      "fieldWeight": 2,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    },
+    "WhiteMoth_Neutral": {
+      "typical": 76,
+      "densityField": 76,
+      "densityAll": 76,
+      "min": 75,
+      "max": 78,
+      "fieldWeight": 82,
+      "worldTreePoolWeight": 0,
+      "sanctuaryWeight": 0
+    }
+  }
+}

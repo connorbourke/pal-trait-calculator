@@ -26,15 +26,17 @@ Compared against the two reference tools:
 
 | Field | Value |
 | --- | --- |
-| Source | [tylercamp/palcalc](https://github.com/tylercamp/palcalc) **v1.18.3** |
-| Published | 2026-07-31 (after Palworld **1.0.2**) |
+| Source | [tylercamp/palcalc](https://github.com/tylercamp/palcalc) **v1.19.1** |
+| Published | 2026-08-02 (after Palworld **1.0.2**) |
 | Dump DB version | `v27` |
+| Spawn levels | [palworld-atlas-data](https://github.com/Awy64/palworld-atlas-data) density-weighted catch levels |
 | Coverage | 299 Pals · 44,851 combos |
 
 ## Scripts
 
 ```bash
-npm run data:fetch   # download palcalc dumps
+npm run data:fetch   # download palcalc dumps + field alphas + atlas spawns
+npm run data:spawns  # refresh atlas spawn catch levels only
 npm run data         # normalize into public/data
 npm run build:api    # bundle /api serverless handlers (CJS)
 npm run dev

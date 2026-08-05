@@ -79,16 +79,45 @@ describe("QA smoke — real pals.json", () => {
     expect(flaracle.isWorldTreeBreedable).toBe(true);
 
     expect(palAcquisitionCost(xenolord)).toBe(70);
-    expect(palAcquisitionCost(blazamut)).toBe(58);
+    expect(palAcquisitionCost(blazamut)).toBe(48);
     expect(palAcquisitionCost(selyne)).toBe(65);
     expect(palAcquisitionCost(mimog)).toBe(40);
-    expect(palAcquisitionCost(frostplume)).toBe(49);
+    expect(palAcquisitionCost(frostplume)).toBe(57);
+    expect(frostplume.typicalWildLevel).toBe(57);
+    const grizzbolt = byName(dataset, "Grizzbolt");
+    expect(palAcquisitionCost(grizzbolt)).toBe(56);
+    expect(palAcquisitionCost(frostplume)).toBeGreaterThan(
+      palAcquisitionCost(blazamut),
+    );
+    expect(palAcquisitionCost(grizzbolt)).toBeGreaterThan(
+      palAcquisitionCost(blazamut),
+    );
+    expect(palAcquisitionCost(grizzbolt)).toBeLessThan(70);
+    const astegon = byName(dataset, "Astegon");
+    // Volcano Sanctuary guardian is Lv55 field/alpha — not the shared WT Lv80 pool
+    expect(palAcquisitionCost(astegon)).toBe(55);
+    expect(palAcquisitionCost(astegon)).toBeLessThan(
+      palAcquisitionCost(grizzbolt) + 5,
+    );
+    const shadowbeak = byName(dataset, "Shadowbeak");
+    // No.3 resident / rare roam, not a sanctuary guardian boss
+    expect(palAcquisitionCost(shadowbeak)).toBe(53);
+    expect(palAcquisitionCost(shadowbeak)).toBeLessThan(65);
     expect(palAcquisitionCost(flaracle)).toBeGreaterThan(
       palAcquisitionCost(blazamut),
     );
     expect(palAcquisitionCost(xenolord)).toBeGreaterThan(
       palAcquisitionCost(blazamut),
     );
+
+    const frostallion = byName(dataset, "Frostallion");
+    const jetragon = byName(dataset, "Jetragon");
+    const bellanoir = byName(dataset, "Bellanoir");
+    expect(frostallion.rarity).toBe(20);
+    expect(palAcquisitionCost(frostallion)).toBe(65); // typ 60 + legendary 5
+    expect(palAcquisitionCost(jetragon)).toBe(75); // typ 70 + 5
+    expect(bellanoir.acquisitionKind).toBe("raid");
+    expect(palAcquisitionCost(bellanoir)).toBe(40); // raid override, no +5
   });
 
   it("Find the Parents for Anubis prefers earlier pairs over raid eggs", () => {
@@ -161,9 +190,11 @@ describe("QA smoke — real pals.json", () => {
     const top5 = ranked.slice(0, 5);
     for (const tree of top5) {
       const partners = tree.steps.map((s) => s.partner.name);
+      // Hard endgame raids should stay out of the head of the list.
+      // Bellanoir Libero (override 60) can compete with bumped wild legendaries;
+      // we leave raid overrides untouched.
       expect(partners).not.toContain("Xenolord");
       expect(partners).not.toContain("Bellanoir");
-      expect(partners).not.toContain("Bellanoir Libero");
       expect(partners).not.toContain("Hartalis");
       expect(partners).not.toContain("Panthalus");
     }

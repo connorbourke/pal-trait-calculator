@@ -16,6 +16,7 @@ function tinyDataset() {
     difficulty: "early",
     minWildLevel: 1,
     maxWildLevel: 10,
+    typicalWildLevel: null,
     minAlphaLevel: null,
     acquisitionKind: "wild",
     price: null,

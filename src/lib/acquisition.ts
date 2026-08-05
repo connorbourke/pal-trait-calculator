@@ -8,10 +8,14 @@ const NO_WILD_ACQUISITION_FLOOR = 90;
 
 /**
  * Wild-band catch level for feasibility ranking.
- * Min-weighted midpoint: players usually meet a species while exploring
- * near the early end of its spawn band, not only at max or via a lone alpha.
+ * Prefers `typicalWildLevel` when present (dump min-weighted mid, conservatively
+ * nudged by atlas spawn density at normalize time). Falls back to a
+ * min-weighted midpoint of the dump band.
  */
 export function wildCatchLevel(pal: Pal): number | null {
+  if (typeof pal.typicalWildLevel === "number") {
+    return pal.typicalWildLevel;
+  }
   const min = pal.minWildLevel;
   const max = pal.maxWildLevel;
   if (min != null && max != null) {
@@ -35,6 +39,10 @@ export function hasWildSpawnBand(pal: Pal): boolean {
   return pal.minWildLevel != null || pal.maxWildLevel != null;
 }
 
+/** Dump rarity 20 = legendary tier (Frostallion, Jetragon, etc.). */
+const LEGENDARY_RARITY = 20;
+const LEGENDARY_ACQUISITION_BUMP = 5;
+
 function worldTreeBump(pal: Pal): number {
   if (pal.isWorldTreeLocked || pal.isWorldTreeBreedable) return 25;
   if (pal.acquisitionKind === "worldTree") return 25;
@@ -42,10 +50,20 @@ function worldTreeBump(pal: Pal): number {
 }
 
 /**
+ * Extra friction for legendaries. Raid legendaries (Bellanoir, etc.) already
+ * use curated override levels — do not double-count.
+ */
+function legendaryBump(pal: Pal): number {
+  if (pal.rarity < LEGENDARY_RARITY) return 0;
+  if (pal.acquisitionKind === "raid") return 0;
+  return LEGENDARY_ACQUISITION_BUMP;
+}
+
+/**
  * Compute acquisition cost from pal fields (ignores any cached acquisitionCost).
  */
 export function computeAcquisitionCost(pal: Pal): number {
-  const bump = worldTreeBump(pal);
+  const bump = worldTreeBump(pal) + legendaryBump(pal);
   const level = palAcquisitionLevel(pal);
   if (level != null) {
     return level + bump;
@@ -136,9 +154,9 @@ export function formatAcquisitionHint(
   }
   if (!stats.hardest || stats.count === 0) return null;
   const hardest = stats.hardest;
-  const level = palAcquisitionLevel(hardest);
-  if (level != null) {
-    return `Hardest catch ~Lv ${level} (${hardest.name})`;
+  // Show the same number ranking uses (includes legendary / WT bumps), not raw catch level.
+  if (hasWildSpawnBand(hardest) || typeof hardest.typicalWildLevel === "number") {
+    return `Hardest catch ~Lv ${palAcquisitionCost(hardest)} (${hardest.name})`;
   }
   if (!hasWildSpawnBand(hardest)) {
     return `Hardest acquire: ${hardest.name} (no wild spawn)`;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Normalize palcalc source dumps into compact app JSON.
- * Source: tylercamp/palcalc v1.18.3 (after Palworld 1.0.2)
+ * Source: tylercamp/palcalc v1.19.1 (+ atlas spawn catch levels).
  */
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
@@ -15,14 +15,15 @@ const outDir = join(root, "public", "data");
 
 const SOURCE = {
   project: "tylercamp/palcalc",
-  release: "v1.18.3",
-  publishedAt: "2026-07-31T14:09:03Z",
-  note: "Latest public game-file dump found after Palworld 1.0.2 (2026-07-29/30). DB Version comes from the dump itself.",
+  release: "v1.19.1",
+  publishedAt: "2026-08-02T20:19:29Z",
+  note: "Latest public game-file dump after Palworld 1.0.2. Wild acquisition scoring also uses density-weighted levels from Awy64/palworld-atlas-data spawn points.",
   urls: {
-    release: "https://github.com/tylercamp/palcalc/releases/tag/v1.18.3",
-    db: "https://raw.githubusercontent.com/tylercamp/palcalc/v1.18.3/PalCalc.Model/db.json",
+    release: "https://github.com/tylercamp/palcalc/releases/tag/v1.19.1",
+    db: "https://raw.githubusercontent.com/tylercamp/palcalc/v1.19.1/PalCalc.Model/db.json",
     breeding:
-      "https://raw.githubusercontent.com/tylercamp/palcalc/v1.18.3/PalCalc.Model/breeding.json",
+      "https://raw.githubusercontent.com/tylercamp/palcalc/v1.19.1/PalCalc.Model/breeding.json",
+    atlasSpawns: "https://awy64.github.io/palworld-atlas-data/v1/latest.json",
   },
 };
 
@@ -85,8 +86,6 @@ const WORLD_TREE_HABITAT = new Set([
  * `kind` is stored on pals as acquisitionKind for docs + scoring bumps.
  */
 const WILD_LEVEL_OVERRIDES = {
-  // Wild on Frostbitten Isle; dump band missing
-  Icelyn: { min: 39, max: 48, kind: "wild" },
   // Fishing — earliest spot + 10
   "Finsider Ignis": { min: 40, max: 40, kind: "fishing" },
   "Penking Lux": { min: 40, max: 40, kind: "fishing" },
@@ -108,6 +107,52 @@ const WILD_LEVEL_OVERRIDES = {
   Silvance: { min: 78, max: 78, kind: "worldTree" },
   Dandilord: { min: 78, max: 78, kind: "worldTree" },
 };
+
+/** Override midpoint used as typicalWildLevel when curated bands replace dump/atlas. */
+function overrideTypicalLevel(min, max) {
+  return Math.round(0.65 * min + 0.35 * max);
+}
+
+/**
+ * Dump-band baseline (same as acquisition fallback): min-weighted midpoint.
+ * Players often meet a species near the early end of its published band.
+ */
+function dumpMinWeightedLevel(min, max) {
+  return Math.round(0.65 * min + 0.35 * max);
+}
+
+/**
+ * Conservatively nudge dump mid toward atlas *field* spawn density.
+ * Flat Lv80 points are a shared World Tree aura pool (72 pals, equal weight,
+ * ~1/72 per roll) — not Wildlife Sanctuary bosses — and are excluded from
+ * density. Do not treat high WT-pool share as “sanctuary-primary.”
+ *
+ * Real Wildlife Sanctuary guardians (Grizzbolt / Astegon / Frostallion Noct)
+ * show up as ordinary field/alpha points at their guardian levels.
+ */
+const DENSITY_NUDGE_DOWN = 12;
+const DENSITY_NUDGE_UP = 8;
+
+function atlasFieldDensity(row) {
+  const dens = row.densityField ?? row.typical;
+  return dens == null ? null : Number(dens);
+}
+
+function blendTypicalWildLevel(min, max, row) {
+  const dens = atlasFieldDensity(row);
+  if (min == null || max == null) {
+    return dens;
+  }
+  const dumpMid = dumpMinWeightedLevel(min, max);
+  if (dens == null) return dumpMid;
+
+  const delta = dens - dumpMid;
+  const clamped = Math.max(
+    -DENSITY_NUDGE_DOWN,
+    Math.min(DENSITY_NUDGE_UP, delta),
+  );
+  return Math.round(dumpMid + clamped);
+}
 
 function sha256(buf) {
   return createHash("sha256").update(buf).digest("hex");
@@ -167,6 +212,7 @@ function main() {
     difficulty: difficultyTier(p.Rarity ?? 0),
     minWildLevel: p.MinWildLevel ?? null,
     maxWildLevel: p.MaxWildLevel ?? null,
+    typicalWildLevel: null,
     minAlphaLevel: null,
     acquisitionKind: "wild",
     price: p.Price ?? null,
@@ -177,12 +223,41 @@ function main() {
     work: workEntries(p.WorkSuitability),
   }));
 
+  // Spawn-density nudge on dump mid (conservative wide-band correction).
+  const spawnCatchPath = join(dataDir, "spawn-catch-levels.json");
+  let spawnCatchCount = 0;
+  let spawnCatchFilledNull = 0;
+  if (existsSync(spawnCatchPath)) {
+    const spawnCatch = JSON.parse(
+      readFileSync(spawnCatchPath).toString("utf8"),
+    );
+    const levels = spawnCatch.levels ?? {};
+    for (const pal of pals) {
+      const row = levels[pal.internalName];
+      if (!row) continue;
+      if (pal.minWildLevel == null && pal.maxWildLevel == null) {
+        if (row.min != null) pal.minWildLevel = Number(row.min);
+        if (row.max != null) pal.maxWildLevel = Number(row.max);
+        spawnCatchFilledNull += 1;
+      }
+      const typical = blendTypicalWildLevel(
+        pal.minWildLevel,
+        pal.maxWildLevel,
+        row,
+      );
+      if (typical == null) continue;
+      pal.typicalWildLevel = typical;
+      spawnCatchCount += 1;
+    }
+  }
+
   let wildOverrideCount = 0;
   for (const pal of pals) {
     const override = WILD_LEVEL_OVERRIDES[pal.name];
     if (!override) continue;
     pal.minWildLevel = override.min;
     pal.maxWildLevel = override.max;
+    pal.typicalWildLevel = overrideTypicalLevel(override.min, override.max);
     pal.acquisitionKind = override.kind;
     wildOverrideCount += 1;
   }
@@ -336,6 +411,8 @@ function main() {
     worldTreeLockedCount: pals.filter((p) => p.isWorldTreeLocked).length,
     worldTreeBreedableCount: pals.filter((p) => p.isWorldTreeBreedable).length,
     fieldAlphaSpeciesCount: pals.filter((p) => p.minAlphaLevel != null).length,
+    spawnCatchLevelCount: spawnCatchCount,
+    spawnCatchFilledNullCount: spawnCatchFilledNull,
     wildLevelOverrideCount: wildOverrideCount,
     minStepEdgeCount: minSteps.length,
     mutationPassiveCount: mutationPassives.length,
@@ -349,11 +426,13 @@ function main() {
       minimum: "Palworld 1.0",
       preferred: "Palworld 1.0.2",
       alignmentNote:
-        "palcalc v1.18.3 shipped 2026-07-31, one day after Steam 1.0.2 hotfixes. No separate public 1.0.2-only dump was found; this is the newest dump available.",
+        "palcalc v1.19.1 (2026-08-02). Acquisition nudges dump Min/Max mids toward atlas spawn density with clamps so wide bands (dungeon + late region + sanctuary) correct without full density swings.",
     },
     features: {
       worldTreeNote:
         "World Tree exclusives require catching inside the World Tree (self-breed only). World Tree breedables wild-spawn there but can be bred from non–World Tree parents.",
+      acquisitionNote:
+        "Wild catch level is the dump min-weighted mid, nudged toward atlas field spawn density (clamped). Flat Lv80 World Tree pool points are excluded — they are a shared 1/72 table, not sanctuary bosses.",
     },
   };
 
@@ -375,7 +454,7 @@ function main() {
   writeFileSync(join(dataDir, "manifest.json"), JSON.stringify(meta, null, 2));
 
   console.log(
-    `Normalized ${pals.length} pals, ${combos.length} combos, ${minSteps.length} step edges (db ${db.Version}); WT locked ${meta.worldTreeLockedCount}, WT breedable ${meta.worldTreeBreedableCount}; field alphas ${meta.fieldAlphaSpeciesCount}; wild overrides ${wildOverrideCount}`,
+    `Normalized ${pals.length} pals, ${combos.length} combos, ${minSteps.length} step edges (db ${db.Version}); WT locked ${meta.worldTreeLockedCount}, WT breedable ${meta.worldTreeBreedableCount}; field alphas ${meta.fieldAlphaSpeciesCount}; spawn catch ${spawnCatchCount} (filled null ${spawnCatchFilledNull}); wild overrides ${wildOverrideCount}`,
   );
   if (fieldAlphaMissing.length) {
     console.warn(

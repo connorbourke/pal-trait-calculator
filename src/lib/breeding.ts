@@ -60,6 +60,9 @@ export function assembleDataset(parts: DatasetParts): BreedingDataset {
   }
 
   for (const pal of pals) {
+    if (pal.typicalWildLevel === undefined) {
+      pal.typicalWildLevel = null;
+    }
     if (!pal.acquisitionKind) {
       pal.acquisitionKind =
         pal.isWorldTreeLocked || pal.isWorldTreeBreedable

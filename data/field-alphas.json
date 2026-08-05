@@ -1,6 +1,6 @@
 {
   "source": "https://www.palworld.tools/bosses",
-  "fetchedAt": "2026-08-04T21:17:32.969Z",
+  "fetchedAt": "2026-08-05T18:44:49.425Z",
   "note": "Field (non-tower) alpha boss spawns from game FieldBoss data, via palworld.tools. Multiple map spots for one species keep the lowest level.",
   "count": 89,
   "alphas": [

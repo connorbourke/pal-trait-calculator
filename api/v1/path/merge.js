@@ -2074,6 +2074,9 @@ module.exports = __toCommonJS(merge_exports);
 // src/lib/acquisition.ts
 var NO_WILD_ACQUISITION_FLOOR = 90;
 function wildCatchLevel(pal) {
+  if (typeof pal.typicalWildLevel === "number") {
+    return pal.typicalWildLevel;
+  }
   const min = pal.minWildLevel;
   const max = pal.maxWildLevel;
   if (min != null && max != null) {
@@ -2089,13 +2092,20 @@ function palAcquisitionLevel(pal) {
 function hasWildSpawnBand(pal) {
   return pal.minWildLevel != null || pal.maxWildLevel != null;
 }
+var LEGENDARY_RARITY = 20;
+var LEGENDARY_ACQUISITION_BUMP = 5;
 function worldTreeBump(pal) {
   if (pal.isWorldTreeLocked || pal.isWorldTreeBreedable) return 25;
   if (pal.acquisitionKind === "worldTree") return 25;
   return 0;
 }
+function legendaryBump(pal) {
+  if (pal.rarity < LEGENDARY_RARITY) return 0;
+  if (pal.acquisitionKind === "raid") return 0;
+  return LEGENDARY_ACQUISITION_BUMP;
+}
 function computeAcquisitionCost(pal) {
-  const bump = worldTreeBump(pal);
+  const bump = worldTreeBump(pal) + legendaryBump(pal);
   const level = palAcquisitionLevel(pal);
   if (level != null) {
     return level + bump;
@@ -2173,6 +2183,9 @@ function assembleDataset(parts) {
     minSteps[from][to] = steps;
   }
   for (const pal of pals) {
+    if (pal.typicalWildLevel === void 0) {
+      pal.typicalWildLevel = null;
+    }
     if (!pal.acquisitionKind) {
       pal.acquisitionKind = pal.isWorldTreeLocked || pal.isWorldTreeBreedable ? "worldTree" : "wild";
     }
@@ -2574,6 +2587,7 @@ function pathResultFromSnapshot(result) {
     difficulty: "mid",
     minWildLevel: null,
     maxWildLevel: null,
+    typicalWildLevel: null,
     minAlphaLevel: null,
     acquisitionKind: "wild",
     acquisitionCost: 0,

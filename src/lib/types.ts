@@ -35,6 +35,12 @@ export interface Pal {
   difficulty: Difficulty;
   minWildLevel: number | null;
   maxWildLevel: number | null;
+  /**
+   * Catch level used for acquisition ranking: dump min-weighted mid nudged
+   * toward atlas spawn density (see normalize-data blend). Null → compute
+   * from min/max alone.
+   */
+  typicalWildLevel: number | null;
   /** Earliest field/sealed (non-tower) alpha boss level, if any. */
   minAlphaLevel: number | null;
   /**

@@ -112,6 +112,7 @@ export function pathResultFromSnapshot(
       difficulty: "mid" as const,
       minWildLevel: null,
       maxWildLevel: null,
+      typicalWildLevel: null,
       minAlphaLevel: null,
       acquisitionKind: "wild" as const,
       acquisitionCost: 0,

@@ -1,12 +1,13 @@
 {
   "project": "tylercamp/palcalc",
-  "release": "v1.18.3",
-  "publishedAt": "2026-07-31T14:09:03Z",
-  "note": "Latest public game-file dump found after Palworld 1.0.2 (2026-07-29/30). DB Version comes from the dump itself.",
+  "release": "v1.19.1",
+  "publishedAt": "2026-08-02T20:19:29Z",
+  "note": "Latest public game-file dump after Palworld 1.0.2. Wild acquisition scoring also uses density-weighted levels from Awy64/palworld-atlas-data spawn points.",
   "urls": {
-    "release": "https://github.com/tylercamp/palcalc/releases/tag/v1.18.3",
-    "db": "https://raw.githubusercontent.com/tylercamp/palcalc/v1.18.3/PalCalc.Model/db.json",
-    "breeding": "https://raw.githubusercontent.com/tylercamp/palcalc/v1.18.3/PalCalc.Model/breeding.json"
+    "release": "https://github.com/tylercamp/palcalc/releases/tag/v1.19.1",
+    "db": "https://raw.githubusercontent.com/tylercamp/palcalc/v1.19.1/PalCalc.Model/db.json",
+    "breeding": "https://raw.githubusercontent.com/tylercamp/palcalc/v1.19.1/PalCalc.Model/breeding.json",
+    "atlasSpawns": "https://awy64.github.io/palworld-atlas-data/v1/latest.json"
   },
   "dbVersion": "v27",
   "palCount": 299,
@@ -17,7 +18,9 @@
   "worldTreeLockedCount": 4,
   "worldTreeBreedableCount": 24,
   "fieldAlphaSpeciesCount": 89,
-  "wildLevelOverrideCount": 16,
+  "spawnCatchLevelCount": 274,
+  "spawnCatchFilledNullCount": 1,
+  "wildLevelOverrideCount": 15,
   "minStepEdgeCount": 78423,
   "mutationPassiveCount": 4,
   "trending": [
@@ -34,13 +37,14 @@
     "dbSourceSha256": "f9d68b04094a036c02836af93896d3e6461d34a942edd199db9f4793f978f929",
     "breedingSourceSha256": "e0f3a3eeca656ff506f4c1307397cad1bf156680d8c90ca6250ea790f11b38bb"
   },
-  "generatedAt": "2026-08-04T23:31:17.406Z",
+  "generatedAt": "2026-08-05T19:35:57.762Z",
   "gameTarget": {
     "minimum": "Palworld 1.0",
     "preferred": "Palworld 1.0.2",
-    "alignmentNote": "palcalc v1.18.3 shipped 2026-07-31, one day after Steam 1.0.2 hotfixes. No separate public 1.0.2-only dump was found; this is the newest dump available."
+    "alignmentNote": "palcalc v1.19.1 (2026-08-02). Acquisition nudges dump Min/Max mids toward atlas spawn density with clamps so wide bands (dungeon + late region + sanctuary) correct without full density swings."
   },
   "features": {
-    "worldTreeNote": "World Tree exclusives require catching inside the World Tree (self-breed only). World Tree breedables wild-spawn there but can be bred from non–World Tree parents."
+    "worldTreeNote": "World Tree exclusives require catching inside the World Tree (self-breed only). World Tree breedables wild-spawn there but can be bred from non–World Tree parents.",
+    "acquisitionNote": "Wild catch level is the dump min-weighted mid, nudged toward atlas field spawn density (clamped). Flat Lv80 World Tree pool points are excluded — they are a shared 1/72 table, not sanctuary bosses."
   }
 }
