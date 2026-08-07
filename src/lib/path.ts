@@ -665,9 +665,9 @@ export function findMergeCandidates(
 
 /**
  * Filter merge candidates by include tags (AND) and exclude tags (AND-not).
- * Include: each tag must be a merge tip or a direct progress breed off a trait parent.
- * Exclude: drop trees where any excluded Pal appears as a tip, merge child, breed
- * partner on either branch, or partner on the finish path to target.
+ * Include: each tag must appear in the reconstructed tree (merge tip/child, or
+ * partner/child on either trait branch or the finish path).
+ * Exclude: drop trees where any excluded Pal appears in those same places.
  */
 export function filterMergeCandidatesByPairingSearch(
   dataset: BreedingDataset,
@@ -687,39 +687,31 @@ export function filterMergeCandidatesByPairingSearch(
   const branchPartnersB = new Map<string, Set<number>>();
   const finishPartners = new Map<string, Set<number>>();
 
+  const involves = (candidate: MergeCandidate, tagIndex: number) =>
+    candidateInvolvesPal(
+      dataset,
+      parentAIndex,
+      parentBIndex,
+      targetIndex,
+      candidate,
+      tagIndex,
+      options,
+      branchPartnersA,
+      branchPartnersB,
+      finishPartners,
+    );
+
   return candidates.filter((candidate) => {
     if (
       includeTags.length > 0 &&
-      !includeTags.every((tagIndex) =>
-        candidateUsesIncludeTag(
-          dataset,
-          parentAIndex,
-          parentBIndex,
-          candidate,
-          tagIndex,
-          options,
-        ),
-      )
+      !includeTags.every((tagIndex) => involves(candidate, tagIndex))
     ) {
       return false;
     }
 
     if (
       excludeTags.length > 0 &&
-      excludeTags.some((tagIndex) =>
-        candidateUsesExcludedPal(
-          dataset,
-          parentAIndex,
-          parentBIndex,
-          targetIndex,
-          candidate,
-          tagIndex,
-          options,
-          branchPartnersA,
-          branchPartnersB,
-          finishPartners,
-        ),
-      )
+      excludeTags.some((tagIndex) => involves(candidate, tagIndex))
     ) {
       return false;
     }
@@ -728,48 +720,8 @@ export function filterMergeCandidatesByPairingSearch(
   });
 }
 
-function candidateUsesIncludeTag(
-  dataset: BreedingDataset,
-  parentAIndex: number,
-  parentBIndex: number,
-  candidate: MergeCandidate,
-  tagIndex: number,
-  options: PathOptions,
-): boolean {
-  if (candidate.left === tagIndex || candidate.right === tagIndex) {
-    return true;
-  }
-
-  if (
-    candidate.costA > 0 &&
-    isProgressPartner(
-      dataset,
-      parentAIndex,
-      candidate.left,
-      tagIndex,
-      options,
-    )
-  ) {
-    return true;
-  }
-
-  if (
-    candidate.costB > 0 &&
-    isProgressPartner(
-      dataset,
-      parentBIndex,
-      candidate.right,
-      tagIndex,
-      options,
-    )
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
-function candidateUsesExcludedPal(
+/** True when the tagged Pal appears on the shortest-path merge tree. */
+function candidateInvolvesPal(
   dataset: BreedingDataset,
   parentAIndex: number,
   parentBIndex: number,
@@ -867,31 +819,6 @@ function pathPartnersInclude(
   }
 
   return partners.has(tagIndex);
-}
-
-/** True when breeding `from` with `partner` moves closer to `tip`. */
-function isProgressPartner(
-  dataset: BreedingDataset,
-  fromIndex: number,
-  tipIndex: number,
-  partnerIndex: number,
-  options: PathOptions,
-): boolean {
-  if (fromIndex === tipIndex) return false;
-  if (isPalFiltered(dataset.pals[partnerIndex], options)) {
-    return false;
-  }
-
-  const child = findChild(dataset, fromIndex, partnerIndex);
-  if (!child) return false;
-  if (isPalFiltered(child, options)) return false;
-
-  const remaining = dataset.minSteps[fromIndex]?.[tipIndex] ?? UNREACHABLE;
-  if (remaining >= UNREACHABLE) return false;
-  if (child.index === tipIndex) return true;
-
-  const nextRemaining = dataset.minSteps[child.index]?.[tipIndex] ?? UNREACHABLE;
-  return nextRemaining < remaining;
 }
 
 /**

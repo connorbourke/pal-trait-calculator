@@ -13,12 +13,14 @@ import {
 import { assembleDataset, findParents } from "./breeding";
 import {
   buildMergeTree,
+  filterMergeCandidatesByPairingSearch,
   findChainCandidates,
   findMergeCandidates,
   findShortestPath,
   pathPartnerAcquisitionStats,
   sortPathResultsByFeasibility,
   type PathOptions,
+  type PathResult,
 } from "./path";
 import type {
   Combo,
@@ -59,6 +61,15 @@ function byName(dataset: ReturnType<typeof loadDataset>, name: string): Pal {
   const pal = dataset.byName.get(name.toLowerCase());
   if (!pal) throw new Error(`Missing pal ${name}`);
   return pal;
+}
+
+function treeInvolvesPal(tree: PathResult, index: number): boolean {
+  return tree.steps.some(
+    (step) =>
+      step.from.index === index ||
+      step.partner.index === index ||
+      step.child.index === index,
+  );
 }
 
 describe("QA smoke — real pals.json", () => {
@@ -152,6 +163,53 @@ describe("QA smoke — real pals.json", () => {
       ),
     );
     expect(topMax).toBeLessThan(palAcquisitionCost(xenolord));
+  });
+
+  it("merge include filter requires the tagged Pal on the reconstructed tree", () => {
+    const lamball = byName(dataset, "Lamball");
+    const cattiva = byName(dataset, "Cattiva");
+    const anubis = byName(dataset, "Anubis");
+    const frostplume = byName(dataset, "Frostplume");
+    const options: PathOptions = {
+      pathResultCache: new Map(),
+      partnerPoolCache: new Map(),
+    };
+
+    const all = findMergeCandidates(
+      dataset,
+      cattiva.index,
+      lamball.index,
+      anubis.index,
+      options,
+    );
+    const filtered = filterMergeCandidatesByPairingSearch(
+      dataset,
+      cattiva.index,
+      lamball.index,
+      anubis.index,
+      all,
+      [frostplume.index],
+      [],
+      options,
+    );
+
+    expect(filtered.length).toBeGreaterThan(0);
+    expect(filtered.length).toBeLessThan(all.length * 0.5);
+
+    const sample = filtered.slice(0, 25).map((c) =>
+      buildMergeTree(
+        dataset,
+        cattiva.index,
+        lamball.index,
+        anubis.index,
+        c,
+        options,
+      ),
+    );
+    for (const tree of sample) {
+      expect(tree.unreachable).toBe(false);
+      expect(treeInvolvesPal(tree, frostplume.index)).toBe(true);
+    }
   });
 
   it("merge Lamball × Cattiva → Anubis: top trees avoid raid partners", () => {
